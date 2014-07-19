@@ -365,6 +365,7 @@ org.korsakow.domain.SnuInputMapper = Class.register('org.korsakow.domain.SnuInpu
 		}).apply(this);
 		var looping = this.parseBoolean(data, "looping");
 		var insertText = this.parseString(data, "insertText");
+		var previewText = this.parseString(data, "previewText");
 		var rating = this.parseFloat(data, "rating");
 		var backgroundSoundMode = this.parseString(data, "backgroundSoundMode");
 		var backgroundSoundLooping = this.parseString(data, "backgroundSoundLooping");
@@ -376,8 +377,9 @@ org.korsakow.domain.SnuInputMapper = Class.register('org.korsakow.domain.SnuInpu
 			} else
 				return null;
 		}).apply(this);
-		return new org.korsakow.domain.Snu(id, name, [], mainMedia, previewMedia, interface, events, lives, looping, starter, insertText, rating,
-			backgroundSoundMode,backgroundSoundLooping, backgroundSoundMedia, backgroundSoundVolume);
+		return new org.korsakow.domain.Snu(id, name, [], mainMedia, previewMedia, interface, events, lives,
+				looping, starter, insertText, previewText, rating,
+				backgroundSoundMode,backgroundSoundLooping, backgroundSoundMedia, backgroundSoundVolume);
 	}
 });
 
@@ -452,7 +454,31 @@ org.korsakow.domain.PreviewInputMapper = Class.register('org.korsakow.domain.Pre
 		var width = this.parseInt(data, "width");
 		var height = this.parseInt(data, "height");
 		var index = this.parseInt(data, "index");
-		var widget = new org.korsakow.domain.widget.Preview(id, [], type, x, y, width, height, index);
+		
+		var fontColor = this.parseString(data, "fontColor");
+		var fontFamily = this.parseString(data, "fontFamily");
+		var fontSize = this.parseInt(data, "fontSize");
+		var fontStyle = this.parseString(data, "fontStyle");
+		var fontWeight = this.parseString(data, "fontWeight");
+		var textDecoration = this.parseString(data, "textDecoration");
+		
+		var horizontalTextAlignment = this.parseString(data, "horizontalTextAlignment");
+		var verticalTextAlignment = this.parseString(data, "verticalTextAlignment");
+		
+		var previewTextMode = (function() {
+			if (data.children("previewTextMode").length) {
+				return org.korsakow.domain.widget.Preview.PreviewTextMode.fromValue(this.parseString(data, "previewTextMode"));
+			} else
+				return null;
+		}).apply(this);
+		var previewTextEffect = (function() {
+			if (data.children("previewTextEffect").length) {
+				return org.korsakow.domain.widget.Preview.PreviewTextEffect.fromValue(this.parseString(data, "previewTextEffect"));
+			} else
+				return null;
+		}).apply(this);
+		
+		var widget = new org.korsakow.domain.widget.Preview(id, [], type, x, y, width, height, index, fontColor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration, horizontalTextAlignment, verticalTextAlignment, previewTextMode, previewTextEffect);
 		return widget;
 	}
 });
@@ -486,7 +512,6 @@ org.korsakow.domain.InsertTextInputMapper = Class.register('org.korsakow.domain.
 		var width = this.parseInt(data, "width");
 		var height = this.parseInt(data, "height");
 		var fontColor = this.parseString(data, "fontColor");
-//		var fontBackgroundColor = this.parseString(data, "fontBackgroundColor");
 		var fontFamily = this.parseString(data, "fontFamily");
 		var fontSize = this.parseInt(data, "fontSize");
 		var fontStyle = this.parseString(data, "fontStyle");
@@ -526,7 +551,6 @@ org.korsakow.domain.PlayTimeInputMapper = Class.register('org.korsakow.domain.Pl
 		var width = this.parseInt(data, "width");
 		var height = this.parseInt(data, "height");
 		var fontColor = this.parseString(data, "fontColor");
-		//var fontBackgroundColor = this.parseString(data, "fontBackgroundColor");
 		var fontFamily = this.parseString(data, "fontFamily");
 		var fontSize = this.parseInt(data, "fontSize");
 		var fontStyle = this.parseString(data, "fontStyle");
@@ -551,7 +575,6 @@ org.korsakow.domain.TotalTimeInputMapper = Class.register('org.korsakow.domain.T
 		var width = this.parseInt(data, "width");
 		var height = this.parseInt(data, "height");
 		var fontColor = this.parseString(data, "fontColor");
-		//var fontBackgroundColor = this.parseString(data, "fontBackgroundColor");
 		var fontFamily = this.parseString(data, "fontFamily");
 		var fontSize = this.parseInt(data, "fontSize");
 		var fontStyle = this.parseString(data, "fontStyle");

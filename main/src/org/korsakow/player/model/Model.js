@@ -57,7 +57,7 @@ org.korsakow.domain.Image = Class.register('org.korsakow.domain.Image', org.kors
 });
 
 org.korsakow.domain.Snu = Class.register('org.korsakow.domain.Snu', org.korsakow.domain.DomainObject, {
-	initialize: function($super, id, name, keywords, mainMedia, previewMedia, interface, events, lives, looping, starter, insertText, rating, backgroundSoundMode, backgroundSoundLooping, backgroundSoundMedia, backgroundSoundVolume) {
+	initialize: function($super, id, name, keywords, mainMedia, previewMedia, interface, events, lives, looping, starter, insertText, previewText, rating, backgroundSoundMode, backgroundSoundLooping, backgroundSoundMedia, backgroundSoundVolume) {
 		$super(id);
 		this.name = name;
 		this.keyword = keywords;
@@ -69,6 +69,7 @@ org.korsakow.domain.Snu = Class.register('org.korsakow.domain.Snu', org.korsakow
 		this.looping = looping;
 		this.start = starter;
 		this.insertText = insertText;
+		this.previewText = previewText;
 		this.rating = rating;
 		this.backgroundSoundMode = backgroundSoundMode;
 		this.backgroundSoundLooping = backgroundSoundLooping;

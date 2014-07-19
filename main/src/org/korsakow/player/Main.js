@@ -164,6 +164,33 @@ org.korsakow.Exception.getStackTrace = function() {
     return callstack;	// dr
 };
 
+
+org.korsakow.Enum = Class.register('org.korsakow.Enum', {
+	initialize: function($super, values) {
+		$super();
+		this.values = Object.keys(values).map(function(name) {
+			var ev = new org.korsakow.EnumValue(values[name], name);
+			this[name] = ev;
+			return ev;
+		}.bind(this));
+	},
+	fromValue: function(value) {
+		return this.values.find(function(e) {
+			return e.value === value;
+		});
+	}
+});
+org.korsakow.EnumValue = Class.register('org.korsakow.EnumValue', {
+	initialize: function($super, value, label) {
+		$super();
+		this.value = value;
+		this.label = label;
+	},
+	toString: function() {
+		return 'Enum[' + this.label + ' = ' + this.value + ']';
+	}
+});
+
 /* Supertype for factories
  * 
  * Provides functionality for registering a class to an ID and creating

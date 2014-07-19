@@ -43,6 +43,7 @@ org.korsakow.controller.AbstractWidgetController = Class.register('org.korsakow.
 		$super();
 	},
 	applyStyles: function() {
+		console.log(this.getClass().className, this.model.fontColor);
 		this.element.css({
 			'color': this.model.fontColor,
 			'background-color' : this.model.fontBackgroundColor,
@@ -116,6 +117,13 @@ org.korsakow.controller.PreviewWidgetController = Class.register('org.korsakow.c
 		$super(env);
 
 		this.element.addClass("Preview");
+		this.textElement = jQuery('<div/>')
+			.addClass('previewText')
+			.css({
+				position: 'absolute'
+			})
+			.appendTo(this.element);
+		
 		this.shouldPlay = false;
 		var This = this;
 		this.element.click(W(function() {
@@ -157,6 +165,12 @@ org.korsakow.controller.PreviewWidgetController = Class.register('org.korsakow.c
 		});
 		mediaUI.load(this.env.resolvePath(media.filename));
 		mediaUI.loop(true);
+		
+		if (snu.previewText) {
+			this.applyPreviewText(snu.previewText);
+		}
+		
+		
 		this.snu = snu;
 		this.mediaUI = mediaUI;
 	},
@@ -178,6 +192,24 @@ org.korsakow.controller.PreviewWidgetController = Class.register('org.korsakow.c
 	},
 	pause: function() {
 		this.mediaUI && this.mediaUI.pause();
+	},
+	applyPreviewText: function(text) {
+		switch (this.model.previewTextMode) {
+			case org.korsakow.domain.widget.Preview.PreviewTextMode.Always:
+				this.textElement.html(text);
+				break;
+			case org.korsakow.domain.widget.Preview.PreviewTextMode.MouseOver:
+				this.element.bind('mouseenter touchstart', function() {
+					this.textElement.html(text);
+				}.bind(this));
+				this.element.bind('mouseleave touchend touchcancel', function() {
+					this.textElement.html('');
+				}.bind(this));
+				break;
+			default:
+				org.korsakow.log.warn('unknown previewTextMode: ' + this.model.previewTextMode);
+				break;
+		}
 	}
 });
 
