@@ -46,7 +46,7 @@ org.korsakow.domain.widget.Preview.PreviewTextMode = new org.korsakow.Enum({
 });
 org.korsakow.domain.widget.Preview.PreviewTextEffect = new org.korsakow.Enum({
 	None: 'none',
-	MouseOver: 'animate'
+	Animate: 'animate'
 });
 
 org.korsakow.domain.widget.FixedPreview = Class.register('org.korsakow.domain.widget.FixedPreview', org.korsakow.domain.Widget, {
