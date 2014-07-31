@@ -471,6 +471,8 @@ org.korsakow.FullScreenAPI = Class.register('org.korsakow.FullScreenAPI',org.kor
  * 
  * @param This the object which will be "this" in the execution context
  * @param func the function to call
+ * 
+ * TODO: this is obviated by Function.bind
  */
 org.korsakow.Functor = Class.register('org.korsakow.Functor', {
 });
