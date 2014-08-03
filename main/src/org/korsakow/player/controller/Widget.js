@@ -43,12 +43,11 @@ org.korsakow.controller.AbstractWidgetController = Class.register('org.korsakow.
 		$super();
 	},
 	applyStyles: function() {
-		console.log(this.getClass().className, this.model.fontColor);
 		this.element.css({
 			'color': this.model.fontColor,
 			'background-color' : this.model.fontBackgroundColor,
 			'font-family': this.model.fontFamily,
-			'font-size': this.model.fontSize,
+			'font-size': this.model.fontSize + 'pt',
 			'font-weight': this.model.fontWeight,
 			'font-style': this.model.fontStyle,
 			'text-decoration': this.model.textDecoration,
