@@ -346,7 +346,7 @@ describe("org.korsakow.controller", function() {
 			var mainMediaWidget = mock(org.korsakow.controller.MainMediaWidgetController);
 			var mediaUI = mainMediaWidget.view = (new org.korsakow.ui.MediaUI());
 			mediaUI.element = jQuery('<div>x</div>');
-			mediaUI.duration = function(){return 123;};
+			mediaUI.duration = function(){return 9999;};
 			var model = mock(org.korsakow.domain.widget.Subtitles);
 			
 			var env = mock(org.korsakow.Environment);
@@ -387,11 +387,11 @@ describe("org.korsakow.controller", function() {
 			}, "should download the subtitle file", 100);
 	
 			runs(function () {
-				mediaUI.element[0].currentTime = 2;
+				mediaUI.element[0].currentTime = 2000;
 				mediaUI.element.trigger('timeupdate');
 				verify(subtitleView).text(["heh, I used to be pretty good at this game."]);
 	
-				mediaUI.element[0].currentTime = 7;
+				mediaUI.element[0].currentTime = 7000;
 				mediaUI.element.trigger('timeupdate');
 				verify(subtitleView).text(["wow such lines much subtitle"]);
 			});

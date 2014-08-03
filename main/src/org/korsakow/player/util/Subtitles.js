@@ -63,9 +63,9 @@ org.korsakow.util.StrSubtitleParser = Class.register('org.korsakow.SubtitleParse
 		var match = this.timeLinePattern.exec( lines[offset++] );
 		if (!match)
 			throw new org.korsakow.util.SubtitleException("invalid time at line #" + (offset));
-		var begin = this.getTime(match[1], match[2], match[3], match[4]) / 1000;
-		var end   = this.getTime(match[5], match[6], match[7], match[8]) / 1000;
-		
+		var begin = this.getTime(match[1], match[2], match[3], match[4]);
+		var end   = this.getTime(match[5], match[6], match[7], match[8]);
+
 		var content = [];
 		for (; offset < lines.length; ++offset) {
 			if (!lines[offset].length) {
@@ -89,6 +89,7 @@ org.korsakow.util.StrSubtitleParser = Class.register('org.korsakow.SubtitleParse
 	 * @return uint
 	 */
 	getTime: function(hh, mm, ss, ms) {
-		return (parseInt(hh)*60*60 + parseInt(mm)*60 + parseInt(ss)) * 1000 + parseInt(ms);
+	    // specify the radix to avoid octal interpretations in some browsers (e.g. PhantomJS) since we capture leading zeros
+		return (parseInt(hh, 10)*60*60 + parseInt(mm, 10)*60 + parseInt(ss, 10)) * 1000 + parseInt(ms, 10);
 	}
 });
