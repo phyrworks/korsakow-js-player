@@ -86,6 +86,27 @@ module.exports = function(grunt) {
                         'PhantomJS'
                     ]
                 }
+            },
+            unit_ci: {
+                options: {
+                    files: [
+                        'dist/player/data/lib/*.js',
+                        'dist/player/data/js/*.js',
+                        'dist/tests-unit/lib/*.js',
+                        'dist/tests-unit/js/*.js'
+                    ],
+                    plugins: [
+                        'karma-jasmine',
+                        'karma-phantomjs-launcher'
+                    ],
+                    frameworks: [
+                        'jasmine'
+                    ],
+                    browsers: [
+                        'PhantomJS'
+                    ]
+                },
+                singleRun: true
             }
         }
     });
