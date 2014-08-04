@@ -1,7 +1,8 @@
+[![Build Status](https://travis-ci.org/dreisch/korsakow-js-player.svg?branch=master)](https://travis-ci.org/dreisch/korsakow-js-player)
+
 # Korsakow
 
 Korsakow is an open-source application for creating web docs and other kinds of nonlinear, interactive narratives. For more information please visit [http://korsakow.org]()
-
 
 ## The Korsakow Player
 
