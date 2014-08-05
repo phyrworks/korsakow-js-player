@@ -8,6 +8,8 @@ org.korsakow.Environment = Class.register('org.korsakow.Environment', {
 		this.interfaceController = null;
 		this.currentMainMedia = null;
 		this.backgroundSoundUI = null;
+        /* MAPPING PLUGIN */
+        this.currentMap = null;
 		
 		this.view = view;
 		this.dao = dao;

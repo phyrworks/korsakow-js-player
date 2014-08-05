@@ -106,6 +106,17 @@ org.korsakow.controller.MainMediaWidgetController = Class.register('org.korsakow
 	
 });
 
+org.korsakow.controller.MainMapWidgetController = Class.register('org.korsakow.controller.MainMapWidgetController',
+org.korsakow.controller.AbstractController, {
+    initialize: function($super, model) {
+        $super(model);
+    },
+    setup: function($super, env) {
+        $super(env);
+        this.element.addClass("MainMap");
+        
+    }
+
 org.korsakow.controller.PreviewWidgetController = Class.register('org.korsakow.controller.PreviewWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
@@ -528,6 +539,8 @@ org.korsakow.controller.SubtitlesController = Class.register('org.korsakow.contr
 
 org.korsakow.controller.WidgetControllerFactory.register("org.korsakow.widget.Subtitles", org.korsakow.controller.SubtitlesController);
 org.korsakow.controller.WidgetControllerFactory.register("org.korsakow.widget.MainMedia", org.korsakow.controller.MainMediaWidgetController);
+/* MAPPING PLUGIN */
+org.korsakow.controller.WidgetControllerFactory.register("org.korsakow.mappingplugin.widget.MainMapWidget", org.korsakow.controller.MainMapWidgetController);
 org.korsakow.controller.WidgetControllerFactory.register("org.korsakow.widget.SnuAutoLink", org.korsakow.controller.PreviewWidgetController);
 org.korsakow.controller.WidgetControllerFactory.register("org.korsakow.widget.SnuFixedLink", org.korsakow.controller.FixedPreviewWidgetController);
 org.korsakow.controller.WidgetControllerFactory.register("org.korsakow.widget.InsertText", org.korsakow.controller.InsertTextWidgetController);
