@@ -9,9 +9,12 @@ Class.register('org.korsakow.ui.MediaUI', {
 	initialize: function($super) {
 		$super();
 	},
-	bind: function() {
-		this.element.bind.apply(this.element, arguments);
-	},
+    bind: function() {
+        this.element.bind.apply(this.element, arguments);
+    },
+    unbind: function() {
+        this.element.unbind.apply(this.element, arguments);
+    },
 	play: function () { },
 	pause: function() { },
 	paused: function() { },
@@ -41,10 +44,6 @@ Class.register('org.korsakow.ui.ImageUI', org.korsakow.ui.MediaUI, {
 			this._duration = 5000;
 		}
 
-	},
-	bind: function(eventType, cb) {
-		var args = arguments;
-		this.element.bind.apply(this.element, arguments);
 	},
 	load: function(src) {
 		this.element.attr("src", src);
@@ -132,9 +131,6 @@ Class.register('org.korsakow.ui.VideoUI', org.korsakow.ui.MediaUI, {
 		this.model = model;
 		this.element = jQuery("<video />");
 		this.element.addClass("VideoUI");
-	},
-	bind: function() {
-		this.element.bind.apply(this.element, arguments);
 	},
 	load: function(src) {
 		var This = this;

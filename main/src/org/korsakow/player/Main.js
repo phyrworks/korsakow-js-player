@@ -57,15 +57,22 @@ Class.register = function(name) {
     var dotIndex = name.lastIndexOf('.');
     clazz.packageName = (function() {
         if (dotIndex !== -1)
-            return name.substring(0, index);
+            return name.substring(0, dotIndex);
         else
             return '';
-    });
-    clazz.className = name.substring(index + 1);
+    })();
+    clazz.className = name.substring(dotIndex + 1);
 
-	NS[clazz.packageName] = clazz;
+	NS(clazz.packageName)[clazz.className] = clazz;
 	
 	return clazz;
+};
+
+Class.registerSingleton = function() {
+    var clazz = Class.register.apply(this, arguments);
+    var instance = new clazz();
+    NS(clazz.packageName)[clazz.className] = instance;
+    return instance;
 };
 
 /* Exception-safe wrapper for a function.
@@ -504,7 +511,7 @@ Class.register('org.korsakow.domain.Player', {
 /* Browser compatible wrapper around the HTML5 <audio> element.
  * 
  */
-Class.register('org.korsakow.domain.Audio', {
+Class.register('org.korsakow.Audio', {
 	initialize: function($super, url, vol) {
 		$super();
 		this.url = url;

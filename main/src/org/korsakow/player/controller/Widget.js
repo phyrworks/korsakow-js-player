@@ -539,7 +539,7 @@ Class.register('org.korsakow.controller.SubtitlesController', org.korsakow.contr
 			url: filePath,
 			success: function(data) {
 				if (filePath.match(/[.]srt$/)) {
-					var parser = new org.korsakow.util.StrSubtitleParser();
+					var parser = new org.korsakow.util.SrtSubtitleParser();
 					cuePoints = parser.parse(data);
 				} else if (filePath.match(/[.]txt$/)) {
 					cuePoints = this.parseK3CuePoints(data);

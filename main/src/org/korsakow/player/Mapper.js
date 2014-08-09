@@ -628,7 +628,7 @@ Class.register('org.korsakow.domain.FullscreenButtonInputMapper', org.korsakow.d
 	}
 });
 
-Class.register('org.korsakow.domain.MasterVolumeButtonInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.MasterVolumeInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 		

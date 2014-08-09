@@ -1,6 +1,6 @@
 NS('org.korsakow');
 
-Class.register('org.korsakow.Bootstrap',org.korsakow.Object,{
+Class.register('org.korsakow.Bootstrap',org.korsakow.Object, {
 	initialize: function($super, dao, domRoot) {
 		$super();
 		this.dao = dao;

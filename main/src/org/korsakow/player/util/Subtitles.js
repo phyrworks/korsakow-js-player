@@ -22,7 +22,7 @@ Class.register('org.korsakow.util.SubtitleCuePoint', {
 /* Parses subtitles in the SRT (http://en.wikipedia.org/wiki/SubRip) format. 
  * 
  */
-Class.register('org.korsakow.SubtitleParser', {
+Class.register('org.korsakow.util.SrtSubtitleParser', {
 	initialize: function($super) {
 		$super();
 		this.timeLinePattern = /([0-9]{2}):([0-9]{2}):([0-9]{2}),([0-9]{3}) --> ([0-9]{2}):([0-9]{2}):([0-9]{2}),([0-9]{3})/;
@@ -60,9 +60,10 @@ Class.register('org.korsakow.SubtitleParser', {
 		if ( count != counter + 1 )
 			throw new org.korsakow.util.SubtitleException("inconsistant file at line #" + (offset) + " ; " + count + "!=" + (counter + 1));
 		
-		var match = this.timeLinePattern.exec( lines[offset++] );
+		var line = lines[offset++];
+		var match = this.timeLinePattern.exec( line );
 		if (!match)
-			throw new org.korsakow.util.SubtitleException("invalid time at line #" + (offset));
+			throw new org.korsakow.util.SubtitleException("invalid time at line #" + (offset) + ': ' + line);
 		var begin = this.getTime(match[1], match[2], match[3], match[4]);
 		var end   = this.getTime(match[5], match[6], match[7], match[8]);
 
