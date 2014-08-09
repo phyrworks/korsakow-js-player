@@ -7,7 +7,7 @@ var W = org.korsakow.WrapCallback;
  */
 org.korsakow.controller.WidgetControllerFactory = new org.korsakow.Factory();
 
-org.korsakow.controller.AbstractWidgetController = Class.register('org.korsakow.controller.AbstractWidgetController', org.korsakow.controller.AbstractController, {
+Class.register('org.korsakow.controller.AbstractWidgetController', org.korsakow.controller.AbstractController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -57,7 +57,7 @@ org.korsakow.controller.AbstractWidgetController = Class.register('org.korsakow.
 	}
 });
 
-org.korsakow.controller.MainMediaWidgetController = Class.register('org.korsakow.controller.MainMediaWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.MainMediaWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -67,7 +67,7 @@ org.korsakow.controller.MainMediaWidgetController = Class.register('org.korsakow
 		var media = snu.mainMedia;
 		
 		this.element.addClass("MainMedia");
-		var mediaUI = this.view = env.createMediaUI(media.getClass().className, media);
+		var mediaUI = this.view = env.createMediaUI(media.getClass().qualifiedName, media);
 		this.element.append(mediaUI.element);
 		mediaUI.element.css({
 			width: "100%",
@@ -106,7 +106,7 @@ org.korsakow.controller.MainMediaWidgetController = Class.register('org.korsakow
 	
 });
 
-org.korsakow.controller.PreviewWidgetController = Class.register('org.korsakow.controller.PreviewWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.PreviewWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 		this.mediaUI = null;
@@ -156,7 +156,7 @@ org.korsakow.controller.PreviewWidgetController = Class.register('org.korsakow.c
 	setSnu: function(snu) {
 		this.clear();
 		var media = snu.previewMedia;
-		var mediaUI = this.env.createMediaUI(media.getClass().className, media);
+		var mediaUI = this.env.createMediaUI(media.getClass().qualifiedName, media);
 		this.element.append(mediaUI.element);
 		mediaUI.element.css({
 			width: "100%",
@@ -212,7 +212,7 @@ org.korsakow.controller.PreviewWidgetController = Class.register('org.korsakow.c
 	}
 });
 
-org.korsakow.controller.FixedPreviewWidgetController = Class.register('org.korsakow.controller.FixedPreviewWidgetController', org.korsakow.controller.PreviewWidgetController, {
+Class.register('org.korsakow.controller.FixedPreviewWidgetController', org.korsakow.controller.PreviewWidgetController, {
 	setup: function ($super, env) {
 		$super(env);
 		var snu = env.dao.findById(this.model.snuId);
@@ -220,7 +220,7 @@ org.korsakow.controller.FixedPreviewWidgetController = Class.register('org.korsa
 	}
 });
 
-org.korsakow.controller.InsertTextWidgetController = Class.register('org.korsakow.controller.InsertTextWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.InsertTextWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -239,7 +239,7 @@ org.korsakow.controller.InsertTextWidgetController = Class.register('org.korsako
 	}
 });
 
-org.korsakow.controller.PlayButtonWidgetController = Class.register('org.korsakow.controller.PlayButtonWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.PlayButtonWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -286,7 +286,7 @@ org.korsakow.controller.PlayButtonWidgetController = Class.register('org.korsako
 	}
 });
 
-org.korsakow.controller.PlayTimeWidgetController = Class.register('org.korsakow.controller.PlayTimeWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.PlayTimeWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -321,7 +321,7 @@ org.korsakow.controller.PlayTimeWidgetController = Class.register('org.korsakow.
 	}
 });
 
-org.korsakow.controller.TotalTimeWidgetController = Class.register('org.korsakow.controller.TotalTimeWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.TotalTimeWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -356,7 +356,7 @@ org.korsakow.controller.TotalTimeWidgetController = Class.register('org.korsakow
 		this.element.append(totalTimeContent);
 	}
 });
-org.korsakow.controller.ScrubberWidgetController = Class.register('org.korsakow.controller.ScrubberWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.ScrubberWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -430,7 +430,7 @@ org.korsakow.controller.ScrubberWidgetController = Class.register('org.korsakow.
 	}
 });
 
-org.korsakow.controller.FullscreenButtonWidgetController = Class.register('org.korsakow.controller.FullscreenButtonWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.FullscreenButtonWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -455,7 +455,7 @@ org.korsakow.controller.FullscreenButtonWidgetController = Class.register('org.k
 	}
 });
 
-org.korsakow.controller.MasterVolumeWidgetController = Class.register('org.korsakow.controller.MasterVolumeWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.MasterVolumeWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -494,7 +494,7 @@ org.korsakow.controller.MasterVolumeWidgetController = Class.register('org.korsa
 
 });
 
-org.korsakow.controller.SubtitlesController = Class.register('org.korsakow.controller.SubtitlesController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.SubtitlesController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},

@@ -8,7 +8,7 @@ var W = org.korsakow.WrapCallback;
  * position and size.
  * 
  */
-org.korsakow.controller.AbstractController = Class.register('org.korsakow.controller.AbstractController', {
+Class.register('org.korsakow.controller.AbstractController', {
 	initialize: function($super, model) {
 		$super();
 		this.model = model || {}; // default value is for jsmock limitation in tests (Object.setPrototypeOf should fix this)

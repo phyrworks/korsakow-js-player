@@ -14,7 +14,7 @@ NS('org.korsakow.domain.widget');
 /* Locates XML nodes by various criteria
  * 
  */
-org.korsakow.domain.Finder = Class.register('org.korsakow.domain.Finder', {
+Class.register('org.korsakow.domain.Finder', {
 	/*
 	 * @param data jQuery-wrapped XML
 	 */
@@ -106,7 +106,7 @@ org.korsakow.domain.DomainObjectNotFoundException = org.korsakow.Exception;
 /* Data Access Object
  * Finds domain objects
  */
-org.korsakow.domain.Dao = Class.register('org.korsakow.domain.Dao', {
+Class.register('org.korsakow.domain.Dao', {
 	/*
 	 * @param $super
 	 * @param finder
@@ -251,29 +251,29 @@ org.korsakow.domain.ParseUtil.parseColor = function(expr, message) {
 	return expr.text();
 };
 
-org.korsakow.domain.InputMapper = Class.register('org.korsakow.domain.InputMapper', {
+Class.register('org.korsakow.domain.InputMapper', {
 	initialize: function($super, dao) {
 		$super();
 		this.dao = dao;
 	},
 	parseInt: function(data, prop) {
-		return PU.parseInt(data.children(prop), this.getClass().className + "." + prop + ':' + data.children('id').text());
+		return PU.parseInt(data.children(prop), this.getClass().qualifiedName + "." + prop + ':' + data.children('id').text());
 	},
 	parseFloat: function(data, prop) {
-		return PU.parseFloat(data.children(prop), this.getClass().className + "." + prop + ':' + data.children('id').text());
+		return PU.parseFloat(data.children(prop), this.getClass().qualifiedName + "." + prop + ':' + data.children('id').text());
 	},
 	parseString: function(data, prop) {
-		return PU.parseString(data.children(prop), this.getClass().className + "." + prop + ':' + data.children('id').text());
+		return PU.parseString(data.children(prop), this.getClass().qualifiedName + "." + prop + ':' + data.children('id').text());
 	},
 	parseBoolean: function(data, prop) {
-		return PU.parseBoolean(data.children(prop), this.getClass().className + "." + prop + ':' + data.children('id').text());
+		return PU.parseBoolean(data.children(prop), this.getClass().qualifiedName + "." + prop + ':' + data.children('id').text());
 	},
 	parseColor: function(data, prop) {
-		return PU.parseColor(data.children(prop), this.getClass().className + "." + prop + ':' + data.children('id').text());
+		return PU.parseColor(data.children(prop), this.getClass().qualifiedName + "." + prop + ':' + data.children('id').text());
 	}
 });
 
-org.korsakow.domain.KeywordInputMapper = Class.register('org.korsakow.domain.KeywordInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.KeywordInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -286,7 +286,7 @@ org.korsakow.domain.KeywordInputMapper = Class.register('org.korsakow.domain.Key
 	}
 });
 
-org.korsakow.domain.VideoInputMapper = Class.register('org.korsakow.domain.VideoInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.VideoInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -309,7 +309,7 @@ org.korsakow.domain.VideoInputMapper = Class.register('org.korsakow.domain.Video
 	}
 });
 
-org.korsakow.domain.ImageInputMapper = Class.register('org.korsakow.domain.ImageInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.ImageInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -327,7 +327,7 @@ org.korsakow.domain.ImageInputMapper = Class.register('org.korsakow.domain.Image
 	}
 });
 
-org.korsakow.domain.SoundInputMapper = Class.register('org.korsakow.domain.SoundInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.SoundInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -338,7 +338,7 @@ org.korsakow.domain.SoundInputMapper = Class.register('org.korsakow.domain.Sound
 	}
 });
 
-org.korsakow.domain.SnuInputMapper = Class.register('org.korsakow.domain.SnuInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.SnuInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -383,7 +383,7 @@ org.korsakow.domain.SnuInputMapper = Class.register('org.korsakow.domain.SnuInpu
 	}
 });
 
-org.korsakow.domain.InterfaceInputMapper = Class.register('org.korsakow.domain.InterfaceInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.InterfaceInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -415,7 +415,7 @@ org.korsakow.domain.InterfaceInputMapper = Class.register('org.korsakow.domain.I
 /**
  * This is actually a sort of MetaInputMapper in that it does a lookup for the actual mapper based on the widget's type
  */
-org.korsakow.domain.WidgetInputMapper = Class.register('org.korsakow.domain.WidgetInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.WidgetInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -426,7 +426,7 @@ org.korsakow.domain.WidgetInputMapper = Class.register('org.korsakow.domain.Widg
 	}
 });
 
-org.korsakow.domain.MainMediaInputMapper = Class.register('org.korsakow.domain.MainMediaInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.MainMediaInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -442,7 +442,7 @@ org.korsakow.domain.MainMediaInputMapper = Class.register('org.korsakow.domain.M
 	}
 });
 
-org.korsakow.domain.PreviewInputMapper = Class.register('org.korsakow.domain.PreviewInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.PreviewInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -483,7 +483,7 @@ org.korsakow.domain.PreviewInputMapper = Class.register('org.korsakow.domain.Pre
 	}
 });
 
-org.korsakow.domain.FixedLinkMapper = Class.register('org.korsakow.domain.FixedLinkMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.FixedLinkMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -500,7 +500,7 @@ org.korsakow.domain.FixedLinkMapper = Class.register('org.korsakow.domain.FixedL
 	}
 });
 
-org.korsakow.domain.InsertTextInputMapper = Class.register('org.korsakow.domain.InsertTextInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.InsertTextInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -522,7 +522,7 @@ org.korsakow.domain.InsertTextInputMapper = Class.register('org.korsakow.domain.
 		return widget;
 	}
 });
-org.korsakow.domain.PlayButtonInputMapper = Class.register('org.korsakow.domain.PlayButtonInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.PlayButtonInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -538,7 +538,7 @@ org.korsakow.domain.PlayButtonInputMapper = Class.register('org.korsakow.domain.
 		return widget;
 	}
 });
-org.korsakow.domain.PlayTimeInputMapper = Class.register('org.korsakow.domain.PlayTimeInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.PlayTimeInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 		
@@ -562,7 +562,7 @@ org.korsakow.domain.PlayTimeInputMapper = Class.register('org.korsakow.domain.Pl
 	}
 });
 
-org.korsakow.domain.TotalTimeInputMapper = Class.register('org.korsakow.domain.TotalTimeInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.TotalTimeInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 		
@@ -586,7 +586,7 @@ org.korsakow.domain.TotalTimeInputMapper = Class.register('org.korsakow.domain.T
 	}
 });
 
-org.korsakow.domain.ScrubberInputMapper = Class.register('org.korsakow.domain.ScrubberInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.ScrubberInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 		
@@ -610,7 +610,7 @@ org.korsakow.domain.ScrubberInputMapper = Class.register('org.korsakow.domain.Sc
 		return widget;
 	}
 });
-org.korsakow.domain.FullscreenButtonInputMapper = Class.register('org.korsakow.domain.FullscreenButtonInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.FullscreenButtonInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 		
@@ -628,7 +628,7 @@ org.korsakow.domain.FullscreenButtonInputMapper = Class.register('org.korsakow.d
 	}
 });
 
-org.korsakow.domain.MasterVolumeInputMapper = Class.register('org.korsakow.domain.MasterVolumeButtonInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.MasterVolumeButtonInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 		
@@ -646,7 +646,7 @@ org.korsakow.domain.MasterVolumeInputMapper = Class.register('org.korsakow.domai
 	}
 });
 
-org.korsakow.domain.SubtitlesInputMapper = Class.register('org.korsakow.domain.SubtitlesInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.SubtitlesInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -685,7 +685,7 @@ org.korsakow.domain.SubtitlesInputMapper = Class.register('org.korsakow.domain.S
 	}
 });
 
-org.korsakow.domain.EventInputMapper = Class.register('org.korsakow.domain.EventInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.EventInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -699,7 +699,7 @@ org.korsakow.domain.EventInputMapper = Class.register('org.korsakow.domain.Event
 	}
 });
 
-org.korsakow.domain.PredicateInputMapper = Class.register('org.korsakow.domain.PredicateInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.PredicateInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -712,7 +712,7 @@ org.korsakow.domain.PredicateInputMapper = Class.register('org.korsakow.domain.P
 	}
 });
 
-org.korsakow.domain.TriggerInputMapper = Class.register('org.korsakow.domain.TriggerInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.TriggerInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -724,7 +724,7 @@ org.korsakow.domain.TriggerInputMapper = Class.register('org.korsakow.domain.Tri
 	}
 });
 
-org.korsakow.domain.trigger.SnuTimeInputMapper = Class.register('org.korsakow.domain.trigger.SnuTimeInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.trigger.SnuTimeInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -740,7 +740,7 @@ org.korsakow.domain.trigger.SnuTimeInputMapper = Class.register('org.korsakow.do
 /**
  * This is actually a sort of MetaInputMapper in that it does a lookup for the actual mapper based on the rule's type
  */
-org.korsakow.domain.RuleInputMapper = Class.register('org.korsakow.domain.RuleInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.RuleInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -751,7 +751,7 @@ org.korsakow.domain.RuleInputMapper = Class.register('org.korsakow.domain.RuleIn
 	}
 });
 
-org.korsakow.domain.KeywordLookupInputMapper = Class.register('org.korsakow.domain.KeywordLookupInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.KeywordLookupInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -763,7 +763,7 @@ org.korsakow.domain.KeywordLookupInputMapper = Class.register('org.korsakow.doma
 		return rule;
 	}
 });
-org.korsakow.domain.ExcludeKeywordsInputMapper = Class.register('org.korsakow.domain.ExcludeKeywordsInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.ExcludeKeywordsInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -776,7 +776,7 @@ org.korsakow.domain.ExcludeKeywordsInputMapper = Class.register('org.korsakow.do
 	}
 });
 
-org.korsakow.domain.SearchInputMapper = Class.register('org.korsakow.domain.SearchInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.SearchInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -791,7 +791,7 @@ org.korsakow.domain.SearchInputMapper = Class.register('org.korsakow.domain.Sear
 });
 //
 
-org.korsakow.domain.ProjectInputMapper = Class.register('org.korsakow.domain.ProjectInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.ProjectInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -837,7 +837,7 @@ org.korsakow.domain.ProjectInputMapper = Class.register('org.korsakow.domain.Pro
 	}
 });
 
-org.korsakow.domain.InputMapperFactory = Class.register('org.korsakow.domain.InputMapperFactory', org.korsakow.Factory, {
+Class.register('org.korsakow.domain.InputMapperFactory', org.korsakow.Factory, {
 	initialize: function($super) {
 		$super("InputMapperFactory");
 	}

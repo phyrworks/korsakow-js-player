@@ -7,7 +7,7 @@ NS('org.korsakow');
  *     complete: called once on the last iteration
  * 
  */
-org.korsakow.Tween = Class.register('org.korsakow.Tween', {
+Class.register('org.korsakow.Tween', {
 	initialize: function($super, duration, begin, end) {
 		$super();
 		this.running = false;
@@ -65,7 +65,7 @@ org.korsakow.Tween.run = function(duration, begin, end, onchange) {
 	return t;
 };
 
-org.korsakow.Fade = Class.register('org.korsakow.Fade', {
+Class.register('org.korsakow.Fade', {
 	
 });
 /* Creates a fading tween.

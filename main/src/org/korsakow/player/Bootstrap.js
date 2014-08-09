@@ -1,6 +1,6 @@
 NS('org.korsakow');
 
-org.korsakow.Bootstrap = Class.register('org.korsakow.Bootstrap',org.korsakow.Object,{
+Class.register('org.korsakow.Bootstrap',org.korsakow.Object,{
 	initialize: function($super, dao, domRoot) {
 		$super();
 		this.dao = dao;
@@ -34,7 +34,7 @@ org.korsakow.Bootstrap = Class.register('org.korsakow.Bootstrap',org.korsakow.Ob
 				deferred.resolve();
 			}
 			
-			var splashScreenUI = this.env.createMediaUI(this.env.project.splashScreenMedia.getClass().className, this.env.project.splashScreenMedia);
+			var splashScreenUI = this.env.createMediaUI(this.env.project.splashScreenMedia.getClass().qualifiedName, this.env.project.splashScreenMedia);
 			splashScreenUI.load(this.env.resolvePath(this.env.project.splashScreenMedia.filename));
 			splashScreenUI.element.addClass('SplashScreen');
 

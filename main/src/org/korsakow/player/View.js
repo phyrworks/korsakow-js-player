@@ -5,7 +5,7 @@
  */
 NS('org.korsakow.ui');
 
-org.korsakow.ui.MediaUI = Class.register('org.korsakow.ui.MediaUI', {
+Class.register('org.korsakow.ui.MediaUI', {
 	initialize: function($super) {
 		$super();
 	},
@@ -22,7 +22,7 @@ org.korsakow.ui.MediaUI = Class.register('org.korsakow.ui.MediaUI', {
 /* Wrapper around HTML images.
  * 
  */
-org.korsakow.ui.ImageUI = Class.register('org.korsakow.ui.ImageUI', org.korsakow.ui.MediaUI, {
+Class.register('org.korsakow.ui.ImageUI', org.korsakow.ui.MediaUI, {
 	initialize: function($super, model) {
 		$super();
 		
@@ -126,7 +126,7 @@ org.korsakow.ui.ImageUI = Class.register('org.korsakow.ui.ImageUI', org.korsakow
 /* Wrapper around HTML videos.
  * 
  */
-org.korsakow.ui.VideoUI = Class.register('org.korsakow.ui.VideoUI', org.korsakow.ui.MediaUI, {
+Class.register('org.korsakow.ui.VideoUI', org.korsakow.ui.MediaUI, {
 	initialize: function($super, model) {
 		$super();
 		this.model = model;
@@ -210,7 +210,7 @@ org.korsakow.ui.VideoUI = Class.register('org.korsakow.ui.VideoUI', org.korsakow
 	}
 });
 
-org.korsakow.ui.SubtitlesUI = Class.register('org.korsakow.ui.SubtitlesUI', {
+Class.register('org.korsakow.ui.SubtitlesUI', {
 	initialize: function($super, opts) {
 		$super();
 		this.element = jQuery("<div></div>");
@@ -275,7 +275,7 @@ org.korsakow.ui.SubtitlesUI = Class.register('org.korsakow.ui.SubtitlesUI', {
 /* Maps the domain objects' class names to the UI classes.
  * 
  */
-org.korsakow.ui.MediaUIFactory = Class.register("org.korsakow.ui.MediaUIFactory", org.korsakow.Factory, {
+Class.register("org.korsakow.ui.MediaUIFactory", org.korsakow.Factory, {
 	initialize: function($super) {
 		$super("MediaUIFactory");
 	}

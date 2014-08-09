@@ -1,6 +1,6 @@
 NS('org.korsakow');
 
-org.korsakow.WebStorage = Class.register('org.korsakow.WebStorage', org.korsakow.Object, {
+Class.register('org.korsakow.WebStorage', org.korsakow.Object, {
 	initialize: function($super, storage) {
 		$super();
 		this.storage = storage;
@@ -21,7 +21,7 @@ org.korsakow.WebStorage = Class.register('org.korsakow.WebStorage', org.korsakow
 		return this.storage.clear();
 	}
 });
-org.korsakow.MemoryStorage = Class.register('org.korsakow.MemoryStorage', org.korsakow.Object, {
+Class.register('org.korsakow.MemoryStorage', org.korsakow.Object, {
 	initialize: function($super) {
 		$super();
 		this.heap = {};

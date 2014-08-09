@@ -9,7 +9,7 @@ org.korsakow.util.SubtitleException = org.korsakow.Exception;
  * @param duration: uint the length of time the subtitle is shown for
  * @param subtitle: Array[String] the lines of text of the subtitle
  */
-org.korsakow.util.SubtitleCuePoint = Class.register('org.korsakow.util.SubtitleCuePoint', {
+Class.register('org.korsakow.util.SubtitleCuePoint', {
 	initialize: function($super, name, time, duration, subtitle) {
 		$super();
 		this.name = name;
@@ -22,7 +22,7 @@ org.korsakow.util.SubtitleCuePoint = Class.register('org.korsakow.util.SubtitleC
 /* Parses subtitles in the SRT (http://en.wikipedia.org/wiki/SubRip) format. 
  * 
  */
-org.korsakow.util.StrSubtitleParser = Class.register('org.korsakow.SubtitleParser', {
+Class.register('org.korsakow.SubtitleParser', {
 	initialize: function($super) {
 		$super();
 		this.timeLinePattern = /([0-9]{2}):([0-9]{2}):([0-9]{2}),([0-9]{3}) --> ([0-9]{2}):([0-9]{2}):([0-9]{2}),([0-9]{3})/;

@@ -368,7 +368,7 @@ describe("org.korsakow.controller", function() {
 			};
 			var snu = mock(org.korsakow.domain.Snu);
 			when(env).getCurrentSnu().thenReturn(snu);
-			when(model).getClass().thenReturn({className: 'org.korsakow.domain.widget.Subtitles'});
+			when(model).getClass().thenReturn({qualifiedName: 'org.korsakow.domain.widget.Subtitles'});
 	
 			var subtitleView = mock(org.korsakow.ui.SubtitlesUI);
 	

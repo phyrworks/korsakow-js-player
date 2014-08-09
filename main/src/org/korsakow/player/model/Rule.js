@@ -4,7 +4,7 @@ NS('org.korsakow.domain.rule');
  * 
  * TODO: is this class useful?
  */
-org.korsakow.domain.Rule = Class.register('org.korsakow.domain.Rule', org.korsakow.domain.DomainObject, {
+Class.register('org.korsakow.domain.Rule', org.korsakow.domain.DomainObject, {
 	initialize: function($super, id, keywords, type) {
 		$super(id);
 		this.keywords = keywords;
@@ -18,7 +18,7 @@ org.korsakow.domain.Rule = Class.register('org.korsakow.domain.Rule', org.korsak
 /* Finds SNUs that contain this rule's keywords. SNU's scores increases for
  * each keyword that matches.
  */
-org.korsakow.domain.rule.KeywordLookup = Class.register('org.korsakow.domain.rule.KeywordLookup', org.korsakow.domain.Rule, {
+Class.register('org.korsakow.domain.rule.KeywordLookup', org.korsakow.domain.Rule, {
 	initialize: function($super, id, keywords, type) {
 		$super(id, keywords, type);
 		// TODO: assert type == org.korsakow.rule.KeywordLookup
@@ -57,7 +57,7 @@ org.korsakow.domain.rule.KeywordLookup = Class.register('org.korsakow.domain.rul
 /* Filters from the list any SNU that has any of this rule's keywords
  * 
  */
-org.korsakow.domain.rule.ExcludeKeywords = Class.register('org.korsakow.domain.rule.ExcludeKeywords', org.korsakow.domain.Rule, {
+Class.register('org.korsakow.domain.rule.ExcludeKeywords', org.korsakow.domain.Rule, {
 	initialize: function($super, id, keywords, type) {
 		$super(id, keywords, type);
 	},
@@ -74,7 +74,7 @@ org.korsakow.domain.rule.ExcludeKeywords = Class.register('org.korsakow.domain.r
 /* Performs a search by running a series of subrules. Results are displayed
  * in Preview widgets.
  */
-org.korsakow.domain.rule.Search = Class.register('org.korsakow.domain.rule.Search', org.korsakow.domain.Rule, {
+Class.register('org.korsakow.domain.rule.Search', org.korsakow.domain.Rule, {
 	initialize: function($super, id, keywords, type, rules, maxLinks) {
 		$super(id, keywords, type);
 		this.rules = rules;

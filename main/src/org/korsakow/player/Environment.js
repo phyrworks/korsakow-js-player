@@ -1,6 +1,6 @@
 NS('org.korsakow');
 
-org.korsakow.Environment = Class.register('org.korsakow.Environment', {
+Class.register('org.korsakow.Environment', {
 	initialize: function(view, dao, localStorage) {
 		this.currentSnu = null;
 		this.currentInterface = null;
@@ -96,8 +96,8 @@ org.korsakow.Environment = Class.register('org.korsakow.Environment', {
 		
 		this.applyGlobalVolume();
 	},
-	createMediaUI: function(className, opts) {
-		return org.korsakow.ui.MediaUIFactory.create(className, opts);
+	createMediaUI: function(qualifiedName, opts) {
+		return org.korsakow.ui.MediaUIFactory.create(qualifiedName, opts);
 	},
 	applyGlobalVolume: function(){
 		var vol = org.korsakow.Audio.globalVolume;
