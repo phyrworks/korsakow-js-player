@@ -1,7 +1,7 @@
 describe("SrtSubtitleParser", function() {
 	
 	it("should parse SRT text into cue points", function() {
-		var parser = new org.korsakow.util.StrSubtitleParser();
+		var parser = new org.korsakow.util.SrtSubtitleParser();
 		var data = '\n' +
 		'1\n' +
 		'00:00:01,478 --> 00:00:04,020\n' +
@@ -26,7 +26,7 @@ describe("SrtSubtitleParser", function() {
 	});
 
 	it("should trim whitespace from text lines", function() {
-		var parser = new org.korsakow.util.StrSubtitleParser();
+		var parser = new org.korsakow.util.SrtSubtitleParser();
 		var data = '\n' +
 		'1\n' +
 		'00:00:01,478 --> 00:00:04,020\n' +
@@ -38,7 +38,7 @@ describe("SrtSubtitleParser", function() {
 	});
 	
 	it("should throw when the counter is out of order", function() {
-		var parser = new org.korsakow.util.StrSubtitleParser();
+		var parser = new org.korsakow.util.SrtSubtitleParser();
 		var data = '\n' +
 		'1\n' +
 		'00:00:01,478 --> 00:00:04,020\n' +
@@ -56,7 +56,7 @@ describe("SrtSubtitleParser", function() {
 	});
 	
 	it("should throw when the time format is invalid", function() {
-		var parser = new org.korsakow.util.StrSubtitleParser();
+		var parser = new org.korsakow.util.SrtSubtitleParser();
 		var data = '\n' +
 		'1\n' +
 		'00.00.01,478 --> 00.00.04.020\n' +

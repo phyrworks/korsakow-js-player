@@ -3,6 +3,9 @@ module.exports = function(grunt) {
   // Project configuration.
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
+        clean: {
+            dist: ['dist']
+        },
         concat: {
             player: {
                 src: [
@@ -114,10 +117,11 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-karma');
   
     // Default task(s).
     grunt.registerTask('default', ['concat', 'copy']);
-    grunt.registerTask('dist', ['concat', 'copy']);
+    grunt.registerTask('dist', ['clean:dist','concat', 'copy']);
 
 };
