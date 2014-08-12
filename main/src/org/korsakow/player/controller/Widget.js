@@ -166,7 +166,7 @@ Class.register('org.korsakow.controller.PreviewWidgetController', org.korsakow.c
 		mediaUI.loop(true);
 		
 		if (snu.previewText) {
-			this.applyPreviewText(snu.previewText);
+			this.setupPreviewText(snu.previewText);
 		}
 		
 		
@@ -177,6 +177,9 @@ Class.register('org.korsakow.controller.PreviewWidgetController', org.korsakow.c
 		if (this.mediaUI !== null) {
 			this.mediaUI.pause(); 
 			this.element.empty();
+		}
+		if (this.tween) {
+		    this.tween.cancel();
 		}
 		this.mediaUI = null;
 		this.snu = null;
@@ -193,16 +196,34 @@ Class.register('org.korsakow.controller.PreviewWidgetController', org.korsakow.c
 		this.mediaUI && this.mediaUI.pause();
 	},
 	applyPreviewText: function(text) {
+	    switch (this.model.previewTextEffect) {
+            case org.korsakow.domain.widget.Preview.PreviewTextEffect.None:
+                this.textElement.html(text);
+                break;
+            case org.korsakow.domain.widget.Preview.PreviewTextEffect.Animate:
+                var charsPerSecond = 25;
+                var duration = text.length*1000/charsPerSecond;
+                if (this.tween) {
+                    this.tween.cancel();
+                }
+                this.tween = org.korsakow.Tween.run(duration, 0, text.length, function(event, t) {
+                    this.textElement.html(text.substring(0, t));
+                }.bind(this));
+                this.tween.start();
+                break;
+	    }
+	},
+	setupPreviewText: function(text) {
 		switch (this.model.previewTextMode) {
 			case org.korsakow.domain.widget.Preview.PreviewTextMode.Always:
-				this.textElement.html(text);
+				this.applyPreviewText(text);
 				break;
 			case org.korsakow.domain.widget.Preview.PreviewTextMode.MouseOver:
 				this.element.bind('mouseenter touchstart', function() {
-					this.textElement.html(text);
+					this.applyPreviewText(text);
 				}.bind(this));
 				this.element.bind('mouseleave touchend touchcancel', function() {
-					this.textElement.html('');
+					this.applyPreviewText('');
 				}.bind(this));
 				break;
 			default:
