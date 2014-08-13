@@ -9,6 +9,7 @@ org.korsakow.Environment = Class.register('org.korsakow.Environment', {
 		this.currentMainMedia = null;
 		this.backgroundSoundUI = null;
         /* MAPPING PLUGIN */
+        this.currentMainMapWidget = null;
         this.currentMap = null;
 		
 		this.view = view;
@@ -68,6 +69,16 @@ org.korsakow.Environment = Class.register('org.korsakow.Environment', {
 	getMainMediaWidget: function(){
 		return this.getWidgetsOfType("org.korsakow.widget.MainMedia")[0];
 	},
+	/* MAPPING PLUGIN */
+	getMainMapWidget: function(){
+		var mapWidgets = this.getWidgetsOfType("org.korsakow.mappingplugin.widget.MainMapWidget");
+
+		if (mapWidgets.length > 0)
+			return mapWidgets[0];
+
+		return null;
+	},
+
 	getLastSnu: function() {
 		return this.localStorage.get('lastSnu');
 	},
@@ -101,6 +112,12 @@ org.korsakow.Environment = Class.register('org.korsakow.Environment', {
 	createMediaUI: function(className, opts) {
 		return org.korsakow.ui.MediaUIFactory.create(className, opts);
 	},
+
+	/* MAPPING PLUGIN */
+	createMapUI: function() {
+		return new org.korsakow.mappingplugin.ui.MapUI(this.currentMap);
+	},
+
 	applyGlobalVolume: function(){
 		var vol = org.korsakow.Audio.globalVolume;
 		this.view.find('video').each(function(){
@@ -170,6 +187,9 @@ org.korsakow.Environment = Class.register('org.korsakow.Environment', {
 		}
 		this.currentMainMedia = null;
 
+		/* MAPPING PLUGIN */
+		this.currentMainMapWidget = null;
+
 		this.currentSnu = snu;
 		this.setLastSnu(snu.id);
 		
@@ -185,6 +205,8 @@ org.korsakow.Environment = Class.register('org.korsakow.Environment', {
 			ctrl.setup(this);
 			if (ctrl.model.type === 'org.korsakow.widget.MainMedia') {
 				this.currentMainMedia = ctrl;
+			} else if (ctrl.model.type === 'org.korsakow.widget.mappingplugin.MainMapWidget'){
+				this.currentMainMapWidget = ctrl;
 			}
 		}
 		if (!this.currentMainMedia) {

@@ -67,7 +67,13 @@ var InterfaceController = org.korsakow.controller.InterfaceController = Class.re
 				widgetController = org.korsakow.controller.WidgetControllerFactory.create(widget.type, widget);
 			} catch (e) {
 				org.korsakow.log.error(e);
-				throw e;
+
+				/*
+					Removed the following throw.  It isn't being caught anywhere, and as long as there is
+					a MainMedia Widget (a condition that is checked for elsewhere), the Korsakow media
+					should still work, rather than crashing and showing nothing. --Phoenix 07-08-2104 (ddmmyy)
+				*/
+				//throw e;
 			}
 			this.controllers.push(widgetController);
 			this.element.append(widgetController.element);

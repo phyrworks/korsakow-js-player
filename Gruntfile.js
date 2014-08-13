@@ -11,7 +11,25 @@ module.exports = function(grunt) {
         		      'main/src/org/korsakow/player/Main.js',
         		      'main/src/org/korsakow/player/model/Model.js',
         		      'main/src/org/korsakow/player/controller/Controller.js',
-        		      'main/src/org/**/*.js'],
+                      'main/src/org/korsakow/player/model/Widget.js',
+                      'main/src/org/korsakow/player/controller/Widget.js',
+                      'main/src/org/korsakow/player/Mapper.js',
+                      'main/src/org/korsakow/player/model/Rule.js',
+                      'main/src/org/korsakow/player/Polyfill.js',
+                      'main/src/org/korsakow/player/Storage.js',
+                      'main/src/org/korsakow/player/util/Subtitles.js',
+                      'main/src/org/korsakow/player/View.js',
+                      /* MAPPING PLUGIN */
+                      'main/src/org/korsakow/player/mappingplugin/model/Model.js',
+                      'main/src/org/korsakow/player/mappingplugin/model/Widget.js',
+                      'main/src/org/korsakow/player/mappingplugin/WidgetController.js',
+                      'main/src/org/korsakow/player/mappingplugin/InputMapper.js',
+                      'main/src/org/korsakow/player/mappingplugin/View.js',
+
+                      'main/src/org/korsakow/player/Bootstrap.js',
+                      'main/src/org/korsakow/player/Environment.js',
+                      'main/src/org/korsakow/player/Main.js'],
+        		      //'main/src/org/**/*.js'],
         		dest: 'dist/player/data/lib/korsakow_player.js'
         	},
         	tests: {

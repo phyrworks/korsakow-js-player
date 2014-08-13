@@ -202,6 +202,11 @@ org.korsakow.domain.Dao.create = function(data) {
 		'Sound' : new org.korsakow.domain.SoundInputMapper(dao),
 		'Image': new org.korsakow.domain.ImageInputMapper(dao),
 		'Snu': new org.korsakow.domain.SnuInputMapper(dao),
+
+		/* MAPPING PLUGIN */
+		'Map': new org.korsakow.mappingplugin.domain.MapInputMapper(dao),
+		'LOC': new org.korsakow.mappingplugin.domain.LOCInputMapper(dao),
+
 		'Interface': new org.korsakow.domain.InterfaceInputMapper(dao),
 		'Widget': new org.korsakow.domain.WidgetInputMapper(dao),
 		'Event': new org.korsakow.domain.EventInputMapper(dao),

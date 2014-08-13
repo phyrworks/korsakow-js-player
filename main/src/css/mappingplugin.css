@@ -1,0 +1,35 @@
+.MainMap
+	{
+	border:2px lightGray solid;
+	position:absolute;
+	background-color:red;
+	overflow:auto;
+	margin: 0;
+	padding: 0;
+	}
+
+/*	
+.mapwrapper
+	{
+	top: 0px;
+	left: 0px;
+	overflow: visible;
+	position:absolute;
+	}
+*/
+
+.map
+	{
+	/*margin: 44px 148px 0px 22px;*/
+	-webkit-user-select: none;
+	/*box-shadow: 0px 0px 50px;
+	-webkit-box-shadow: 0 0 50px black;*/
+	background-color: darkGray;
+	text-align: center;
+	vertical-align: middle;
+	color: white;
+	margin: 0;
+	padding: 0;
+	top: 0;
+	left: 0;
+	}
