@@ -12,7 +12,8 @@
     "grunt-contrib-watch": "~0.2.0-rc7",
     "grunt-karma": "~0.8.3",
     "karma-jasmine": "^0.1.5",
-    "karma-phantomjs-launcher": "^0.1.4"
+    "karma-phantomjs-launcher": "^0.1.4",
+    "phantomjs": "^1.9.7-15"
   },
   "gitHead": "e97f269f6130ed6da68b5b4df59cb50a52cc5454",
   "readmeFilename": "README.md",
