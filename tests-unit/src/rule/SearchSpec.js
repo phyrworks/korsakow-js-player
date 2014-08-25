@@ -29,6 +29,9 @@ describe("org.korsakow.domain.rule.SearchRule", function() {
 		}
 
 		var env = mock(org.korsakow.Environment);
+		when(env).getProject().thenReturn({
+		    
+		});
 		when(env).getWidgetsOfType().thenReturn(previews.concat());
 
 		var setupResults = mock(new org.korsakow.domain.Rule());

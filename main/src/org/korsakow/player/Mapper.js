@@ -27,7 +27,7 @@ Class.register('org.korsakow.domain.Finder', {
 		var thisFinder = this;
 		function buildIndices() {
 		    ['videos', 'images', 'sounds', 'texts', 'interfaces', 'snus'].forEach(function(type) {
-	            thisFinder.data[type].forEach(function(d) {
+		        thisFinder.data && thisFinder.data[type] && thisFinder.data[type].forEach(function(d) {
 	                thisFinder.idIndex[d.id] = d;
 	                
 	                if (type === 'snus') {
@@ -216,7 +216,7 @@ org.korsakow.domain.ParseUtil.parseString = function(expr, message) {
 org.korsakow.domain.ParseUtil.parseBoolean = function(expr, message) {
     if (!org.korsakow.isValue(expr))
 		throw new org.korsakow.domain.ParseException("Boolean Not found: " + message);
-	return expr;
+	return !!expr;
 };
 org.korsakow.domain.ParseUtil.parseColor = function(expr, message) {
     if (!org.korsakow.isValue(expr))

@@ -6,14 +6,9 @@ describe("org.korsakow.Bootstrap", function() {
 		it("should choose a start Snu when there is one", function() {
 			var Snu = new org.korsakow.domain.Snu();
 
-			var dao = mock(org.korsakow.domain.Dao.create);
+			var dao = mock(new org.korsakow.domain.Dao.create());
 			
-			when(dao).find(new JsHamcrest.SimpleMatcher({
-					matches: function (obj) {
-						return obj.type == 'Snu' &&
-							obj.props.starter == true;
-					}
-				})).thenReturn([Snu]);
+			when(dao).findSnusFilter().thenReturn([Snu]);
 
 			var bs = new org.korsakow.Bootstrap(dao);
 			var startSnu = bs.findStartSnu();
@@ -25,20 +20,11 @@ describe("org.korsakow.Bootstrap", function() {
 
 			var dao = mock(org.korsakow.domain.Dao.create);
 			
-			when(dao).find(new JsHamcrest.SimpleMatcher({
-				matches: function (obj) {
-					return obj.type == 'Snu' &&
-						obj.props && obj.props.starter == true;
-				}
-			})).thenReturn([]);
+			var snus = [Snu];
 			
-			when(dao).find(new JsHamcrest.SimpleMatcher({
-					matches: function (obj) {
-						return obj.type == 'Snu' &&
-							!obj.props;
-					}
-				})).thenReturn([Snu]);
-
+            when(dao).findSnusFilter().then(function(f) { return snus.filter(f); });
+            when(dao).findSnus().thenReturn(snus);
+			
 			var bs = new org.korsakow.Bootstrap(dao);
 			var startSnu = bs.findStartSnu();
 			expect(startSnu).toEqual(Snu);

@@ -63,7 +63,7 @@ Class.register('org.korsakow.domain.rule.ExcludeKeywords', org.korsakow.domain.R
 	},
 	execute: function(env, searchResults) {
 		jQuery.each(this.keywords, function(i, keyword) {
-			var snusToExclude = env.getDao().find({type: 'Snu', keyword: keyword.value});
+			var snusToExclude = env.getDao().findSnusWithKeyword(keyword.value);
 			jQuery.each(snusToExclude, function(j, snu) {
 				searchResults.results.splice( searchResults.indexOfSnu(snu), 1 );
 			});

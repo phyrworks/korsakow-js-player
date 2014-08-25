@@ -23,7 +23,7 @@ describe("org.korsakow.domain.rule.KeywordLookup", function() {
         ];
 
 		var dao = mock(org.korsakow.domain.Dao);
-		when(dao).find().thenReturn(expectedSnus.concat([currentSnu]));
+		when(dao).findSnusWithKeyword().thenReturn(expectedSnus.concat([currentSnu]));
 
 		var env = mock(org.korsakow.Environment);
 		when(env).getDao().thenReturn(dao);
@@ -49,9 +49,9 @@ describe("org.korsakow.domain.rule.KeywordLookup", function() {
         ];
 
 		var dao = mock(org.korsakow.domain.Dao);
-		when(dao).find().then(function(opts) {
+		when(dao).findSnusWithKeyword().then(function(keyword) {
 			return expectedSnus.filter(function(snu) {
-				return snu.keywords.some(function(k) { return k.value == opts.keyword; });
+				return snu.keywords.some(function(k) { return k.value == keyword; });
 			});
 		});
 
@@ -78,7 +78,7 @@ describe("org.korsakow.domain.rule.KeywordLookup", function() {
         ];
 
 		var dao = mock(org.korsakow.domain.Dao);
-		when(dao).find().thenReturn(expectedSnus);
+		when(dao).findSnusWithKeyword().thenReturn(expectedSnus);
 
 		var env = mock(org.korsakow.Environment);
 		when(env).getDao().thenReturn(dao);
