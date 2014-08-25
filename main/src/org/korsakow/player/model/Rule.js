@@ -35,7 +35,7 @@ Class.register('org.korsakow.domain.rule.KeywordLookup', org.korsakow.domain.Rul
 		var currentSnu = env.getCurrentSnu();
 		$.each(this.keywords, function(i, keyword) {
 			var dao = env.getDao();
-			var snus = dao.find({type: 'Snu', keyword: keyword.value});
+			var snus = dao.findSnusWithKeyword(keyword.value);
 
 			for (var j = 0; j < snus.length; ++j) {
 				var snu = snus[j];
@@ -90,6 +90,8 @@ Class.register('org.korsakow.domain.rule.Search', org.korsakow.domain.Rule, {
 			rule.execute(env, searchResults);
 		});
 
+		org.korsakow.log.debug('Search yielded ' + searchResults.results.length + ' results');
+		
 		searchResults.results.sort(function(a, b) {
 			if (b.score == a.score)
 				return Math.random()>0.5?1:-1;
@@ -100,7 +102,6 @@ Class.register('org.korsakow.domain.rule.Search', org.korsakow.domain.Rule, {
 	processSearchResults: function(env, searchResults) {
 		var previews = env.getWidgetsOfType('org.korsakow.widget.SnuAutoLink');
 
-		// TODO: support for keeplinks
 		previews = previews.filter(function(p) {
 		    return !p.getSnu();
 		});

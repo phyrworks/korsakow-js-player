@@ -323,6 +323,16 @@ Class.register('org.korsakow.Utility', org.korsakow.Object, {
 	}
 });
 
+org.korsakow.isValue = function(x) {
+    switch (jQuery.type(x)) {
+    case 'undefined':
+    case 'null':
+        return false;
+    default:
+        return true;
+    }
+};
+
 /* Converts the number to a string and pads to the number of zeros
  * 
  */

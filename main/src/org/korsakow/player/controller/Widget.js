@@ -173,6 +173,9 @@ Class.register('org.korsakow.controller.PreviewWidgetController', org.korsakow.c
 		this.snu = snu;
 		this.mediaUI = mediaUI;
 	},
+	getSnu: function() {
+	    return this.snu;
+	},
 	clear: function() {
 		if (this.mediaUI !== null) {
 			this.mediaUI.pause(); 

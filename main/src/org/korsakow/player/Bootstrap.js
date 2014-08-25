@@ -8,18 +8,13 @@ Class.register('org.korsakow.Bootstrap',org.korsakow.Object, {
 	},
 	
 	findStartSnu: function() {
-		var startSnus = this.dao.find({
-			type: "Snu",
-			props: {
-				starter: true
-			}
+		var startSnus = this.dao.findSnusFilter(function(s) {
+		    return s.starter;
 		});
 		if (!startSnus.length) {
 			org.korsakow.log.debug('Film has no start Snus');
 			
-			startSnus = this.dao.find({
-				type: "Snu",
-			});
+			startSnus = this.dao.findSnus();
 		}
 		
 		return startSnus[Math.floor(Math.random() * startSnus.length)];
@@ -77,7 +72,7 @@ Class.register('org.korsakow.Bootstrap',org.korsakow.Object, {
 		
 		var env = this.env = new org.korsakow.Environment(view, this.dao, localStorage);
 	
-		env.project = this.dao.find({type: "Project"})[0];
+		env.project = this.dao.findProject();
 		
 		function aspect() {
 			var doc = jQuery(window);
@@ -145,10 +140,13 @@ Class.register('org.korsakow.Bootstrap',org.korsakow.Object, {
 				if (env.getLastSnu()) {
 					org.korsakow.log.debug('Attempting to continue from Snu #' + env.getLastSnu());
 					//test the last snu and make sure it's legit
-					var continueSnu = This.dao.find({
-						type: "Snu",
-						props: { id: env.getLastSnu() }
-					})[0];
+					var continueSnu = (function() {
+					    try {
+					        return This.dao.findById(env.getLastSnu());
+					    } catch (e) {
+					        return null;
+					    }
+					})();
 					
 					if (!continueSnu) {
 						org.korsakow.log.debug("Continue-Snu is not valid");
