@@ -148,7 +148,7 @@ Class.register('org.korsakow.domain.Interface', org.korsakow.domain.DomainObject
 });
 
 Class.register('org.korsakow.domain.Project', org.korsakow.domain.DomainObject, {
-	initialize: function($super, id, name, width, height, splashScreenMedia, backgroundSoundMedia, backgroundSoundVolume, backgroundSoundLooping, clickSound, backgroundColor, backgroundImage) {
+	initialize: function($super, id, name, width, height, splashScreenMedia, backgroundSoundMedia, backgroundSoundVolume, backgroundSoundLooping, clickSound, backgroundColor, backgroundImage, maxLinks) {
 		$super(id);
 		this.name = name;
 		this.width = width;
@@ -160,6 +160,7 @@ Class.register('org.korsakow.domain.Project', org.korsakow.domain.DomainObject, 
 		this.clickSound = clickSound;
 		this.backgroundColor = backgroundColor;
 		this.backgroundImage = backgroundImage;
+		this.maxLinks = maxLinks;
 	}
 });
 

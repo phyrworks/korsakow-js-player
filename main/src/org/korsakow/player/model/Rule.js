@@ -101,10 +101,14 @@ Class.register('org.korsakow.domain.rule.Search', org.korsakow.domain.Rule, {
 		var previews = env.getWidgetsOfType('org.korsakow.widget.SnuAutoLink');
 
 		// TODO: support for keeplinks
-		jQuery.each(previews, function(i, preview) {
-			preview.clear();
+		previews = previews.filter(function(p) {
+		    return !p.getSnu();
 		});
-		for (var i = 0; (i < searchResults.results.length) && previews.length && (this.maxLinks == null || i < this.maxLinks); ++i) {
+		
+		var maxLinks = org.korsakow.isValue(this.maxLinks)?this.maxLinks:null;
+		maxLinks = org.korsakow.isValue(env.getProject().maxLinks)?env.getProject().maxLinks:null;
+
+		for (var i = 0; (i < searchResults.results.length) && previews.length && (maxLinks == null || i < maxLinks); ++i) {
 			var snu = searchResults.results[i].snu;
 			var preview = previews.shift();
 			preview.setSnu(snu);

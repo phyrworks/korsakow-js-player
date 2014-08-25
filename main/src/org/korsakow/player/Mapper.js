@@ -832,8 +832,13 @@ Class.register('org.korsakow.domain.ProjectInputMapper', org.korsakow.domain.Inp
 			} else
 				return null;
 		}).apply(this);
-		return new org.korsakow.domain.Project(id, name, width, height, splashScreenMedia, backgroundSoundMedia, backgroundSoundVolume, backgroundSoundLooping, clickSound, backgroundColor, backgroundImage);
-
+		var maxLinks = (function() {
+                   if (data.children('maxLinks').length) {
+                       return this.parseInt(data, 'maxLinks');
+                   else
+                       return null;
+		}).apply(this);
+		return new org.korsakow.domain.Project(id, name, width, height, splashScreenMedia, backgroundSoundMedia, backgroundSoundVolume, backgroundSoundLooping, clickSound, backgroundColor, backgroundImage, maxLinks);
 	}
 });
 
