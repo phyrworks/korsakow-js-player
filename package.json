@@ -2,7 +2,6 @@
   "name": "korsakow-js-player",
   "version": "0.1.0",
   "devDependencies": {
-    "fsevents": "^0.3.0",
     "grunt": "~0.4.1",
     "grunt-contrib-clean": "^0.6.0",
     "grunt-contrib-concat": "~0.1.2-rc6",
