@@ -156,6 +156,13 @@ Class.register('org.korsakow.controller.PreviewWidgetController', org.korsakow.c
 	setSnu: function(snu) {
 		this.clear();
 		var media = snu.previewMedia;
+		if (org.korsakow.Support.isIOS() && snu.previewImage) {
+		    media = snu.previewImage;
+		}
+		
+		if (!media) {
+		    return;
+		}
 		var mediaUI = this.env.createMediaUI(media.getClass().qualifiedName, media);
 		this.element.append(mediaUI.element);
 		mediaUI.element.css({

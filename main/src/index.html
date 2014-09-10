@@ -25,12 +25,12 @@ jQuery( function() {
 		success: function(data) {
 			var K = NS("org.korsakow.domain");
 			var dao = K.Dao.create(data);
-			console.log('Korsakow project file loaded, bootstrapping the player...');
+			org.korsakow.log.info('Korsakow project file loaded, bootstrapping the player...');
 			var bootstrap = new org.korsakow.Bootstrap(dao, jQuery('body'));
 			bootstrap.start();
 	 	},
 	 	error: function(jqXHR, textStatus, errorThrown) {
-	 	    console.log('Error while loading project file: ', textStatus, errorThrown, errorThrown.stack);
+	 	    org.korsakow.log.info('Error while loading project file: ', textStatus, errorThrown, errorThrown.stack);
 	 	}
 	});
 

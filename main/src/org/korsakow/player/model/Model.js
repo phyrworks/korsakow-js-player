@@ -57,12 +57,13 @@ Class.register('org.korsakow.domain.Image', org.korsakow.domain.Media, {
 });
 
 Class.register('org.korsakow.domain.Snu', org.korsakow.domain.DomainObject, {
-	initialize: function($super, id, name, keywords, mainMedia, previewMedia, interface, events, lives, looping, starter, insertText, previewText, rating, backgroundSoundMode, backgroundSoundLooping, backgroundSoundMedia, backgroundSoundVolume) {
+	initialize: function($super, id, name, keywords, mainMedia, previewImage, previewMedia, interface, events, lives, looping, starter, insertText, previewText, rating, backgroundSoundMode, backgroundSoundLooping, backgroundSoundMedia, backgroundSoundVolume) {
 		$super(id);
 		this.name = name;
 		this.keyword = keywords;
 		this.mainMedia = mainMedia;
-		this.previewMedia = previewMedia;
+        this.previewImage = previewImage;
+        this.previewMedia = previewMedia;
 		this.interface = interface;
 		this.events = events;
 		this.lives = lives;

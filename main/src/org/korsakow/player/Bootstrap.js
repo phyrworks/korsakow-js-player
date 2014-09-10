@@ -57,6 +57,8 @@ Class.register('org.korsakow.Bootstrap',org.korsakow.Object, {
 	 * @param dao an {org.korsakow.domain.Dao}
 	 */
 	start: function() {
+	    org.korsakow.log.info("Is iOS? " + org.korsakow.Support.isIOS());
+	    
 		var This = this;
 		var view = this.view = this.domRoot.find("#view");
 		view.empty();

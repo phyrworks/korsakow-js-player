@@ -32,8 +32,9 @@ Class.register('org.korsakow.domain.Finder', {
 	                
 	                if (type === 'snus') {
     	                d.keywords && d.keywords.forEach(function(k) {
-    	                    thisFinder.snuKeywordIndex[k] = thisFinder.snuKeywordIndex[k] || [];
-    	                    thisFinder.snuKeywordIndex[k].push(d);
+    	                    var value = k.value;
+    	                    thisFinder.snuKeywordIndex[value] = thisFinder.snuKeywordIndex[value] || [];
+    	                    thisFinder.snuKeywordIndex[value].push(d);
     	                });
 	                }
 	            });
@@ -43,9 +44,9 @@ Class.register('org.korsakow.domain.Finder', {
 		buildIndices();
         var after = org.korsakow.Date.now();
         
-        console.log("Building indices took " + (after-before) + "ms");
-        console.log('IdIndex size: ', Object.keys(this.idIndex).length);
-        console.log('SnuKeywordIndex size', Object.keys(this.snuKeywordIndex).length);
+        org.korsakow.log.info("Building indices took " + (after-before) + "ms");
+        org.korsakow.log.info('IdIndex size: ', Object.keys(this.idIndex).length);
+        org.korsakow.log.info('SnuKeywordIndex size', Object.keys(this.snuKeywordIndex).length);
 	},
 	/**
 	 * @param id the id of the object to find, corresponds to the <id> tag in the xml
@@ -251,9 +252,7 @@ Class.register('org.korsakow.domain.KeywordInputMapper', org.korsakow.domain.Inp
 		$super(dao);
 	},
 	map: function(data) {
-//		var value = this.parseString(data, "value");
-//		var weight = this.parseString(data, "weight");
-		var value = PU.parseString(data, "Keyword.value");
+		var value = this.parseString(data, "value");
 		var weight = 1;
 		return new org.korsakow.domain.Keyword(value, weight);
 	}
@@ -320,6 +319,13 @@ Class.register('org.korsakow.domain.SnuInputMapper', org.korsakow.domain.InputMa
 		var name = this.parseString(data, "name");
 		var keywords = this.dao.mapKeywords(data.keywords);
 		var mainMedia = this.dao.findMediaById(this.parseInt(data, "mainMediaId"));
+        var previewImage = (function() {
+            if (org.korsakow.isValue(data["previewImageId"])) {
+                return this.dao.findMediaById(this.parseInt(data, "previewImageId"));
+            } else {
+                return null;
+            }
+        }).apply(this);
 		var previewMedia = (function() {
 			if (org.korsakow.isValue(data["previewMediaId"])) {
 				return this.dao.findMediaById(this.parseInt(data, "previewMediaId"));
@@ -350,7 +356,9 @@ Class.register('org.korsakow.domain.SnuInputMapper', org.korsakow.domain.InputMa
 			} else
 				return null;
 		}).apply(this);
-		return new org.korsakow.domain.Snu(id, name, keywords, mainMedia, previewMedia, interface, events, lives,
+		return new org.korsakow.domain.Snu(id, name, keywords, 
+		        mainMedia, previewImage, previewMedia, 
+		        interface, events, lives,
 				looping, starter, insertText, previewText, rating,
 				backgroundSoundMode,backgroundSoundLooping, backgroundSoundMedia, backgroundSoundVolume);
 	}
