@@ -86,11 +86,26 @@ org.korsakow.domain.Finder = Class.register('org.korsakow.domain.Finder', {
 				return false;
 			});
 		}
+
+		/* MAPPING PLUGIN */
+		if (opts.loc) {
+			result = result.filter(function() {
+				var x = $(this).children('locs').children('LOC');
+				for (var i = 0; i < x.length; ++i)
+					var value = $(x[i]).children("keyword")[0]; //<-- There should be exactly 1
+					var txt = $(value).text();
+					if (txt == opts.loc) {
+						return true;
+					}
+				return false;
+
+			});
+		}
 		
 		if (opts.props) {
 			$.each(opts.props, function(propName, propValue) {
 				result = result.filter(function() {
-					// TODO: something other than string convertion
+					// TODO: something other than string conversion
 					return $(this).children(propName).text() == ""+propValue;
 				});
 			});
@@ -205,6 +220,7 @@ org.korsakow.domain.Dao.create = function(data) {
 
 		/* MAPPING PLUGIN */
 		'Map': new org.korsakow.mappingplugin.domain.MapInputMapper(dao),
+		/* MAPPING PLUGIN */
 		'LOC': new org.korsakow.mappingplugin.domain.LOCInputMapper(dao),
 
 		'Interface': new org.korsakow.domain.InterfaceInputMapper(dao),

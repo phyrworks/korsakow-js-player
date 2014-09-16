@@ -70,7 +70,7 @@ org.korsakow.Bootstrap = Class.register('org.korsakow.Bootstrap',org.korsakow.Ob
 			if (window.localStorage) {
 				return new org.korsakow.WebStorage(window.localStorage);
 			} else {
-				org.korsakow.log.debuyg("localStorage is not available, using a non-persistent in-memory store instead");
+				org.korsakow.log.debug("localStorage is not available, using a non-persistent in-memory store instead");
 				return new org.korsakow.MemoryStorage();
 			}
 		})();

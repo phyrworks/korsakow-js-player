@@ -112,12 +112,6 @@ org.korsakow.Environment = Class.register('org.korsakow.Environment', {
 	createMediaUI: function(className, opts) {
 		return org.korsakow.ui.MediaUIFactory.create(className, opts);
 	},
-
-	/* MAPPING PLUGIN */
-	createMapUI: function() {
-		return new org.korsakow.mappingplugin.ui.MapUI(this.currentMap);
-	},
-
 	applyGlobalVolume: function(){
 		var vol = org.korsakow.Audio.globalVolume;
 		this.view.find('video').each(function(){
@@ -205,7 +199,7 @@ org.korsakow.Environment = Class.register('org.korsakow.Environment', {
 			ctrl.setup(this);
 			if (ctrl.model.type === 'org.korsakow.widget.MainMedia') {
 				this.currentMainMedia = ctrl;
-			} else if (ctrl.model.type === 'org.korsakow.widget.mappingplugin.MainMapWidget'){
+			} else if (ctrl.model.type === 'org.korsakow.mappingplugin.widget.MainMapWidget'){
 				this.currentMainMapWidget = ctrl;
 			}
 		}

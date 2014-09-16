@@ -9,14 +9,16 @@ Number.prototype.mod = function(n) {
 
 
 org.korsakow.mappingplugin.ui.MapUI = Class.register('org.korsakow.mappingplugin.ui.MapUI', {
-	initialize: function($super, model) {
+	initialize: function($super, env, model) {
 		$super();
 
-		this.model = model;
-		this.setup();
+		this.setup(env, model);
 	},
 
-	setup: function() {
+	setup: function(env, model) {
+		
+		this.model = model;
+
 		// this.element = jQuery("<div />").addClass('mapcontainer');
 		this.mapMoveable = true;
 
@@ -35,7 +37,7 @@ org.korsakow.mappingplugin.ui.MapUI = Class.register('org.korsakow.mappingplugin
 			//Assume the contained url is an image
 			var self = this;
 			this.element = jQuery("<img />")
-						 	.attr({"src" : model.mapRep.url})
+						 	.attr({"src" : env.resolvePath(model.mapRep.image.filename)})
 						 	.addClass("map")
 						 	.load(function() {
 						 		//Do some final setup and get the original size of the image

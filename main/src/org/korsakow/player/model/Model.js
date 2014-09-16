@@ -20,6 +20,28 @@ org.korsakow.domain.Keyword = Class.register('org.korsakow.domain.Keyword', org.
 		this.value = value;
 		this.weight = weight;
 	},
+	/*
+	 * returns true if the keyword is a LOC, false otherwise.
+	 */
+	/* MAPPING PLUGIN */
+	isLOC: function() {
+	 	return this.value.charAt(0) == '♦';
+	},
+
+	/*
+	 * returns the LOC name of the keyword (keyword.value with the '♦' stripped frome the beginning) if the keyword
+	 * is a type of LOC.  Returns null otherwise.
+	 */
+	/* MAPPING PLUGIN */
+	LOCValue: function() {
+		if (this.isLOC()) {
+			//This is a LOC
+			return this.value.substr(1);
+		}
+
+		return null;
+	},
+
 	toString: function() {
 		return "[Keyword value='"+this.value+"'; weight='"+this.weight+"']";
 	}
@@ -166,6 +188,22 @@ org.korsakow.domain.Project = Class.register('org.korsakow.domain.Project', org.
 org.korsakow.SearchResults = Class.register('org.korsakow.SearchResults', {
 	initialize: function() {
 		this.results = [];
+		this.keywords = [];
+	},
+	addKeyword: function(keyword) {
+		if (keyword == null || keyword.length == 0)
+			return;
+
+		for (var i = 0; i < this.keywords.length; ++i) {
+			if (this.keywords[i].keyword == keyword) {
+				this.keywords[i].score += 1;
+				return this.keywords[i].score;
+			}
+		}
+
+		//not in the list above, add it
+		this.keywords.push( {"keyword": keyword, "score": 1 });
+
 	},
 	indexOfSnu: function(snu) {
 		for (var i = 0; i < this.results.length; ++i)
@@ -183,10 +221,56 @@ org.korsakow.SearchResults = Class.register('org.korsakow.SearchResults', {
 		return "[org.korsakow.SearchResults]";
 	}
 });
+
+/* MAPPING PLUGIN */
+// org.korsakow.mappingplugin.SearchResults = Class.register('org.korsakow.mappingplugin.SearchResults', org.korsakow.SearchResults, {
+// 	initialize: function($super) {
+// 		$super();
+// 	}
+
+// 	indexOfMap: function(map) {
+// 		for (var i = 0; i < this.results.length; ++i)
+// 			if (this.results[i].map.id == map.id)
+// 				return i;
+// 		return -1;		
+// 	},
+// 	resultOfMap: function(map) {
+// 		for (var i = 0; i < this.results.length; ++i)
+// 			if (this.results[i].map.id == map.id)
+// 				return this.results[i];
+// 		return null;
+// 	},
+// 	toString: function() {
+// 		return "[org.korsakow.mappingplugin.SearchResults]";
+// 	}
+
+// });
+
 org.korsakow.SearchResult = Class.register('org.korsakow.SearchResult', {
-	initialize: function(snu, score) {
+	initialize: function(snu, score, keyword) {
 		this.snu = snu;
 		this.score = score;
+		/* MAPPING PLUGIN */
+		//The Mapping plugin needs to know which keywords are associated with a SNU to work properly
+		this.keywords = [];
+		this.keywords.push({ "keyword": keyword, "score": 1});
+	},
+	addScore: function(value) {
+		this.score += value * this.snu.rating;
+	},
+	/* MAPPING PLUGIN */
+	addKeyword: function(keyword) {
+		if (keyword == null || keyword.length == 0)
+			return;
+
+		for (var i = 0; i < this.keywords.length; ++i) {
+			if (this.keywords[i].keyword == keyword) {
+				this.keywords[i].score += 1;
+				return this.keywords[i].score;
+			}
+		}
+
+		this.keywords.push({"keyword": keyword, "score": 1});
 	},
 	toString: function() {
 		return "[org.korsakow.SearchResult; snu="+this.snu.id+"("+this.snu.name+")]";

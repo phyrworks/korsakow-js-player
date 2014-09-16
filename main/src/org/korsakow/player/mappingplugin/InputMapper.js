@@ -5,10 +5,14 @@ org.korsakow.mappingplugin.domain.LOCInputMapper = Class.register('org.korsakow.
 		$super(dao);
 	},
 	map: function(data) {
-		var kind = PU.parseString(data, "LOC.kind");
-		var x = PU.parseFloat(data, "LOC.x");
-		var y = PU.parseFloat(data, "LOC.y");
-		var keyword = PU.parstString(data, "LOC.keyword");
+		for (var i = 0; i < data.children().length; ++i) {
+			console.log(data.children()[i].localName + " = " + $(data.children()[i]).text());
+		}
+
+		var kind = PU.parseString(data.children("kind"), "kind");
+		var x = PU.parseFloat(data.children("x"), "x");
+		var y = PU.parseFloat(data.children("y"), "y");
+		var keyword = PU.parseString(data.children("keyword"), "keyword");
 
 		return new org.korsakow.mappingplugin.domain.LOC(kind, x, y, keyword);
 	}
@@ -27,7 +31,8 @@ org.korsakow.mappingplugin.domain.MapInputMapper = Class.register('org.korsakow.
 		var mapRep = null;
 
 		if (mapRepKind == "image") {
-			var mapRepImage = this.dao.findMediaById(this.parstInt(data, "map_imageId"));
+			var mapImageID = this.parseInt(data, "map_imageId");
+			var mapRepImage = this.dao.findMediaById(mapImageID);
 
 			mapRep = new org.korsakow.mappingplugin.domain.ImageMapRep(mapRepImage);
 
@@ -37,9 +42,8 @@ org.korsakow.mappingplugin.domain.MapInputMapper = Class.register('org.korsakow.
 			mapRep = new org.korsakow.mappingplugin.domain.GoogleMapRep(mapRepURL);
 		}
 
-		var foundKeywords = this.dao.find({parent: id, path: 'keywords/Keyword' });
-		var keywords = [];
-		var locs = [];
+		var keywords = this.dao.find({parent: id, path: 'keywords/Keyword'});
+		var locs = this.dao.find({parent: id, path: 'locs/LOC'});
 
 		return new org.korsakow.mappingplugin.domain.Map(id, name, mapRep, keywords, locs);
 	}

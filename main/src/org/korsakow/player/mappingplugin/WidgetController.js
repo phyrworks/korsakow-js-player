@@ -9,10 +9,26 @@ org.korsakow.controller.AbstractWidgetController, {
         $super(env);
         this.element.addClass("MainMap");
 
-        this.view = env.createMapUI();
+        this.view = new org.korsakow.mappingplugin.ui.MapUI(env, env.currentMap);
         this.element.append(this.view.element);
         
+    },
+
+    clear: function() {
+    	//remove any element with class "map" from this.element
+    	this.element.empty();
+    },
+
+    setMap:function(env, map) {
+    	this.clear();
+
+    	if (map == null)
+    		return;
+
+    	this.view.setup(env, map);
+    	this.element.append(this.view.element);
     }
+
 });
 
 
