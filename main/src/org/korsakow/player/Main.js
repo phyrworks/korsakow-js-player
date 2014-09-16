@@ -42,19 +42,37 @@ var Class = Prototype.Class;
  * (see http://prototypejs.org/learn/class-inheritance)
  * 
  * - Applies org.korskow.Object as the supertype of all registered classes
- * - Creates the property class.className
+ * - Creates the property class.qualifiedName
  * 
  * @param name the fully qualified name of the class
  */
 Class.register = function(name) {
-	var className = name;
 	var args = jQuery.makeArray(arguments);
 	args.shift();
-	if (name != 'org.korsakow.Object' && args.length >= 1 && !args[0].className)
+	if (name != 'org.korsakow.Object' && args.length >= 1 && !args[0].qualifiedName)
 		args.unshift(org.korsakow.Object);
 	var clazz = Class.create.apply(null, args);
-	clazz.className = className;
+	clazz.qualifiedName = name;
+
+    var dotIndex = name.lastIndexOf('.');
+    clazz.packageName = (function() {
+        if (dotIndex !== -1)
+            return name.substring(0, dotIndex);
+        else
+            return '';
+    })();
+    clazz.className = name.substring(dotIndex + 1);
+
+	NS(clazz.packageName)[clazz.className] = clazz;
+	
 	return clazz;
+};
+
+Class.registerSingleton = function() {
+    var clazz = Class.register.apply(this, arguments);
+    var instance = new clazz();
+    NS(clazz.packageName)[clazz.className] = instance;
+    return instance;
 };
 
 /* Exception-safe wrapper for a function.
@@ -80,7 +98,7 @@ org.korsakow.WrapCallback = function(f) {
  * Defines methods and properties useful for debugging.
  * 
  */
-org.korsakow.Object = Class.register('org.korsakow.Object', {
+Class.register('org.korsakow.Object', {
 	initialize: function(name) {
 		this._uniqueId = ++org.korsakow.Object._uniqueIdGen;
 	},
@@ -88,7 +106,7 @@ org.korsakow.Object = Class.register('org.korsakow.Object', {
 		return this.__proto__.constructor;
 	},
 	toString: function(s) {
-		return "[" + this.getClass().className + "#" + this._uniqueId + ";" + (s?s:"") + "]";
+		return "[" + this.getClass().qualifiedName + "#" + this._uniqueId + ";" + (s?s:"") + "]";
 	}
 });
 org.korsakow.Object._uniqueIdGen = 0;
@@ -96,7 +114,7 @@ org.korsakow.Object._uniqueIdGen = 0;
 /* Exception hierarchy is not currently used because we could not reliably
  * get file and line-number info this way.
  */
-org.korsakow.Exception = Class.register('org.korsakow.Exception', {
+Class.register('org.korsakow.Exception', {
 	initialize: function($super, message) {
 		$super();
 		this.message = message;
@@ -164,12 +182,39 @@ org.korsakow.Exception.getStackTrace = function() {
     return callstack;	// dr
 };
 
+
+Class.register('org.korsakow.Enum', {
+	initialize: function($super, values) {
+		$super();
+		this.values = Object.keys(values).map(function(name) {
+			var ev = new org.korsakow.EnumValue(values[name], name);
+			this[name] = ev;
+			return ev;
+		}.bind(this));
+	},
+	fromValue: function(value) {
+		return this.values.find(function(e) {
+			return e.value === value;
+		});
+	}
+});
+Class.register('org.korsakow.EnumValue', {
+	initialize: function($super, value, label) {
+		$super();
+		this.value = value;
+		this.label = label;
+	},
+	toString: function() {
+		return 'Enum[' + this.label + ' = ' + this.value + ']';
+	}
+});
+
 /* Supertype for factories
  * 
  * Provides functionality for registering a class to an ID and creating
  * instances of classes by ID.
  */
-org.korsakow.Factory = Class.register('org.korsakow.Factory', org.korsakow.Object, {
+Class.register('org.korsakow.Factory', org.korsakow.Object, {
 	initialize: function($super, name) {
 		$super();
 		// dynamically setup static delegate methods in case the factory is a singleton
@@ -209,7 +254,7 @@ org.korsakow.Factory = Class.register('org.korsakow.Factory', org.korsakow.Objec
 /* Wrapper around logging.
  * 
  */
-org.korsakow.Logger = Class.register('org.korsakow.Logger', org.korsakow.Object, {
+Class.register('org.korsakow.Logger', org.korsakow.Object, {
 	initialize: function($super) {
 		$super();
 	},
@@ -232,7 +277,7 @@ org.korsakow.Logger = Class.register('org.korsakow.Logger', org.korsakow.Object,
 
 org.korsakow.log = new org.korsakow.Logger();
 
-org.korsakow.TimeoutFactory = Class.register('org.korsakow.TimeoutFactory', org.korsakow.Object, {
+Class.register('org.korsakow.TimeoutFactory', org.korsakow.Object, {
 	initialize: function($super) {
 		$super();
 	},
@@ -245,7 +290,7 @@ org.korsakow.TimeoutFactory = Class.register('org.korsakow.TimeoutFactory', org.
 });
 org.korsakow.Timeout = new org.korsakow.TimeoutFactory();
 
-org.korsakow.IntervalFactory = Class.register('org.korsakow.IntervalFactory', org.korsakow.Object, {
+Class.register('org.korsakow.IntervalFactory', org.korsakow.Object, {
 	initialize: function($super) {
 		$super();
 	},
@@ -272,11 +317,21 @@ org.korsakow.clearInterval = function(func, delay) {
 	return org.korsakow.Interval.clear.apply(org.korsakow.Interval, arguments);
 };
 
-org.korsakow.Utility = Class.register('org.korsakow.Utility', org.korsakow.Object, {
+Class.register('org.korsakow.Utility', org.korsakow.Object, {
 	initialize: function($super){
 		$super();
 	}
 });
+
+org.korsakow.isValue = function(x) {
+    switch (jQuery.type(x)) {
+    case 'undefined':
+    case 'null':
+        return false;
+    default:
+        return true;
+    }
+};
 
 /* Converts the number to a string and pads to the number of zeros
  * 
@@ -374,7 +429,7 @@ org.korsakow.Utility.applyOperators = function(value, current) {
  * 
  * derived from: http://johndyer.name/native-fullscreen-javascript-api-plus-jquery-plugin/
  */
-org.korsakow.FullScreenAPI = Class.register('org.korsakow.FullScreenAPI',org.korsakow.Object,{
+Class.register('org.korsakow.FullScreenAPI',org.korsakow.Object,{
 	initialize: function($super){
 		$super();
 		
@@ -444,8 +499,10 @@ org.korsakow.FullScreenAPI = Class.register('org.korsakow.FullScreenAPI',org.kor
  * 
  * @param This the object which will be "this" in the execution context
  * @param func the function to call
+ * 
+ * TODO: this is obviated by Function.bind
  */
-org.korsakow.Functor = Class.register('org.korsakow.Functor', {
+Class.register('org.korsakow.Functor', {
 });
 org.korsakow.ftor =
 org.korsakow.Functor.create = function(This, func) {
@@ -457,14 +514,14 @@ org.korsakow.Functor.create = function(This, func) {
 /* TODO: unused?
  * 
  */
-org.korsakow.domain.Player = Class.register('org.korsakow.domain.Player', {
+Class.register('org.korsakow.domain.Player', {
 	
 });
 
 /* Browser compatible wrapper around the HTML5 <audio> element.
  * 
  */
-org.korsakow.Audio = Class.register('org.korsakow.domain.Audio', {
+Class.register('org.korsakow.Audio', {
 	initialize: function($super, url, vol) {
 		$super();
 		this.url = url;
@@ -594,90 +651,10 @@ org.korsakow.Audio.errorToString = function(e) {
 	}
 };
 
-org.korsakow.Date = Class.register('org.korsakow.Date', org.korsakow.Object, {
+Class.register('org.korsakow.Date', org.korsakow.Object, {
 });
 /* Gets the current data/time in milliseconds.
  */
 org.korsakow.Date.now = function() {
 	return Date.now();
-};
-
-/* Interpolates a value over a period of time at a fixed rate.
- * 
- * Events:
- *     change: called once per iteration
- *     complete: called once on the last iteration
- * 
- */
-org.korsakow.Tween = Class.register('org.korsakow.Tween', {
-	initialize: function($super, duration, begin, end) {
-		$super();
-		this.running = false;
-		this.begin = begin;
-		this.end = end;
-		this.duration = duration;
-		this.position = 0;
-		this.time = 0;
-		this.prev = 0;
-	},
-	start: function() {
-		if (this.running) return;
-		this.running = true;
-		prev = org.korsakow.Date.now();
-		this.timeout = setInterval(org.korsakow.ftor(this, this.onTimer), Math.min(50, this.duration));
-	},
-	stop: function() {
-		if (!this.running) return;
-		this.cancel();
-		this.position = this.end;
-		$(this).trigger('change');
-		$(this).trigger('complete');
-	},
-	cancel: function() {
-		if (!this.running) return;
-		this.running = false;
-		clearInterval(this.timeout);
-		this.timeout = null;
-	},
-	onTimer: function() {
-		var now = org.korsakow.Date.now();
-		this.time = (now-prev);
-		this.prev = now;
-		if (this.time > this.duration)
-			this.time = this.duration;
-		this.position = this.begin + (this.end-this.begin) * (this.duration?(this.time / this.duration):1);
-		if (this.time >= this.duration)
-			this.stop();
-		else
-			$(this).trigger('change');
-	}
-});
-
-org.korsakow.Fade = Class.register('org.korsakow.Fade', {
-	
-});
-/* Creates a fading tween.
- * 
- * @param opts {
- *     duration: see Tween
- *     begin: see Tween
- *     end: see Tween
- *     target: the object whose property will be faded
- *     property: the property which will be faded (may be a property or accessor)
- *     complete: a callback invoked when the tween completes
- * }
- * 
- * @return the tween object
- */
-org.korsakow.Fade.fade = function(opts) {
-	var t = new org.korsakow.Tween(opts.duration, opts.begin, opts.end);
-	var init = org.korsakow.Utility.apply(opts.target, opts.property);
-	$(t).bind('change', function() {
-		org.korsakow.Utility.update(opts.target, opts.property, t.position);
-	});
-	if (opts.complete)
-		$(t).bind('complete', opts.complete);
-	org.korsakow.Utility.update(opts.target, opts.property, 0);
-	t.start();
-	return t;
 };

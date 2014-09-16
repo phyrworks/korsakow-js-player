@@ -12,7 +12,7 @@
 
 <script type="text/javascript" src="data/lib/jquery.js"></script>
 <script type="text/javascript" src="data/lib/prototype.class.js"></script>
-<script type="text/javascript" src="data/lib/korsakow_player.js"></script>
+<script type="text/javascript" src="data/js/korsakow_player.js"></script>
 
 <script type="text/javascript">
 window.onerror = function(errorMsg, url, lineNumber) {
@@ -21,12 +21,17 @@ window.onerror = function(errorMsg, url, lineNumber) {
 
 jQuery( function() {
 	jQuery.ajax({
-		url: "data/project.xml",
+		url: "data/project.js",
+		dataType: 'json',
 		success: function(data) {
 			var K = NS("org.korsakow.domain");
-			var dao = K.Dao.create(jQuery(data));
+			var dao = K.Dao.create(data);
+			org.korsakow.log.info('Korsakow project file loaded, bootstrapping the player...');
 			var bootstrap = new org.korsakow.Bootstrap(dao, jQuery('body'));
 			bootstrap.start();
+	 	},
+	 	error: function(jqXHR, textStatus, errorThrown) {
+	 	    org.korsakow.log.info('Error while loading project file: ', textStatus, errorThrown, errorThrown.stack);
 	 	}
 	});
 

@@ -4,7 +4,7 @@ NS('org.korsakow.domain.rule');
  * 
  * TODO: is this class useful?
  */
-org.korsakow.domain.Rule = Class.register('org.korsakow.domain.Rule', org.korsakow.domain.DomainObject, {
+Class.register('org.korsakow.domain.Rule', org.korsakow.domain.DomainObject, {
 	initialize: function($super, id, keywords, type) {
 		$super(id);
 		this.keywords = keywords;
@@ -18,12 +18,11 @@ org.korsakow.domain.Rule = Class.register('org.korsakow.domain.Rule', org.korsak
 /* Finds SNUs that contain this rule's keywords. SNU's scores increases for
  * each keyword that matches.
  */
-org.korsakow.domain.rule.KeywordLookup = Class.register('org.korsakow.domain.rule.KeywordLookup', org.korsakow.domain.Rule, {
+Class.register('org.korsakow.domain.rule.KeywordLookup', org.korsakow.domain.Rule, {
 	initialize: function($super, id, keywords, type) {
 		$super(id, keywords, type);
 		// TODO: assert type == org.korsakow.rule.KeywordLookup
 	},
-
 	/*
 	 * @param searchResults {org.korsakow.SearchResults}
 	 */
@@ -37,7 +36,7 @@ org.korsakow.domain.rule.KeywordLookup = Class.register('org.korsakow.domain.rul
 
 		$.each(this.keywords, function(i, keyword) {
 			var dao = env.getDao();
-			var snus = dao.find({type: 'Snu', keyword: keyword.value});
+			var snus = dao.findSnusWithKeyword(keyword.value);
 
 			for (var j = 0; j < snus.length; ++j) {
 				var snu = snus[j];
@@ -47,14 +46,11 @@ org.korsakow.domain.rule.KeywordLookup = Class.register('org.korsakow.domain.rul
 				var index = searchResults.indexOfSnu(snu);
 
 				if ( index == -1 ) {
-					result = new org.korsakow.SearchResult(snu, 0, keyword);
+					result = new org.korsakow.SearchResult(snu, 0);
 					searchResults.results.push(result);
 				} else
 					result = searchResults.results[index];
-				result.addScore(env.getDefaultSearchResultIncrement());
-				result.addKeyword(keyword);
-
-				searchResults.addKeyword(keyword);
+				result.score += env.getDefaultSearchResultIncrement() * snu.rating;
 			}
 		});
 	}
@@ -62,13 +58,13 @@ org.korsakow.domain.rule.KeywordLookup = Class.register('org.korsakow.domain.rul
 /* Filters from the list any SNU that has any of this rule's keywords
  * 
  */
-org.korsakow.domain.rule.ExcludeKeywords = Class.register('org.korsakow.domain.rule.ExcludeKeywords', org.korsakow.domain.Rule, {
+Class.register('org.korsakow.domain.rule.ExcludeKeywords', org.korsakow.domain.Rule, {
 	initialize: function($super, id, keywords, type) {
 		$super(id, keywords, type);
 	},
 	execute: function(env, searchResults) {
 		jQuery.each(this.keywords, function(i, keyword) {
-			var snusToExclude = env.getDao().find({type: 'Snu', keyword: keyword.value});
+			var snusToExclude = env.getDao().findSnusWithKeyword(keyword.value);
 			jQuery.each(snusToExclude, function(j, snu) {
 				searchResults.results.splice( searchResults.indexOfSnu(snu), 1 );
 			});
@@ -79,7 +75,7 @@ org.korsakow.domain.rule.ExcludeKeywords = Class.register('org.korsakow.domain.r
 /* Performs a search by running a series of subrules. Results are displayed
  * in Preview widgets.
  */
-org.korsakow.domain.rule.Search = Class.register('org.korsakow.domain.rule.Search', org.korsakow.domain.Rule, {
+Class.register('org.korsakow.domain.rule.Search', org.korsakow.domain.Rule, {
 	initialize: function($super, id, keywords, type, rules, maxLinks) {
 		$super(id, keywords, type);
 		this.rules = rules;
@@ -137,7 +133,8 @@ org.korsakow.domain.rule.Search = Class.register('org.korsakow.domain.rule.Searc
 			rule.execute(env, searchResults);
 		});
 
-		//sort the result snus by score
+		org.korsakow.log.debug('Search yielded ' + searchResults.results.length + ' results');
+		
 		searchResults.results.sort(function(a, b) {
 			if (b.score == a.score)
 				return Math.random() > 0.5 ? 1 : -1;
@@ -170,32 +167,17 @@ org.korsakow.domain.rule.Search = Class.register('org.korsakow.domain.rule.Searc
 
 		return searchResults;
 	},
-	processSearchResults: function(env, searchResults, map) {
-		var mapWidget = env.getMainMapWidget();
-
-		if (mapWidget != null) {
-			mapWidget.setMap(env, map.map);
-
-			env.currentMap = map.map;
-
-			//center the map on the currently selected loc (map.loc)
-
-			//remove any snus that arrived here via a loc
-			for (var i = searchResults.results.length; i--;) {
-				if (searchResults.results[i].keywords[0].isLOC()) {
-					searchResults.splice(i, 1);
-				}
-			}
-
-		}
-
+	processSearchResults: function(env, searchResults) {
 		var previews = env.getWidgetsOfType('org.korsakow.widget.SnuAutoLink');
 
-		// TODO: support for keeplinks
-		jQuery.each(previews, function(i, preview) {
-			preview.clear();
+		previews = previews.filter(function(p) {
+		    return !p.getSnu();
 		});
-		for (var i = 0; (i < searchResults.results.length) && previews.length && (this.maxLinks == null || i < this.maxLinks); ++i) {
+		
+		var maxLinks = org.korsakow.isValue(this.maxLinks)?this.maxLinks:null;
+		maxLinks = org.korsakow.isValue(env.getProject().maxLinks)?env.getProject().maxLinks:null;
+
+		for (var i = 0; (i < searchResults.results.length) && previews.length && (maxLinks == null || i < maxLinks); ++i) {
 			var snu = searchResults.results[i].snu;
 			var preview = previews.shift();
 			preview.setSnu(snu);

@@ -4,7 +4,7 @@ NS('org.korsakow.domain.trigger');
 /* Parent class for all domain objects (models)
  * 
  */
-org.korsakow.domain.DomainObject = Class.register('org.korsakow.domain.DomainObject', org.korsakow.Object, {
+Class.register('org.korsakow.domain.DomainObject', org.korsakow.Object, {
 	initialize: function($super, id) {
 		$super();
 		this.id = id;
@@ -14,7 +14,7 @@ org.korsakow.domain.DomainObject = Class.register('org.korsakow.domain.DomainObj
 	}
 });
 
-org.korsakow.domain.Keyword = Class.register('org.korsakow.domain.Keyword', org.korsakow.Object, {
+Class.register('org.korsakow.domain.Keyword', org.korsakow.Object, {
 	initialize: function($super, value, weight) {
 		$super(null);
 		this.value = value;
@@ -47,51 +47,52 @@ org.korsakow.domain.Keyword = Class.register('org.korsakow.domain.Keyword', org.
 	}
 });
 
-
 /* Parent class for all Media types
  * 
  * TODO: is this class useful?
  */
-org.korsakow.domain.Media = Class.register('org.korsakow.domain.Media', org.korsakow.domain.DomainObject, {
+Class.register('org.korsakow.domain.Media', org.korsakow.domain.DomainObject, {
 	initialize: function($super, id, filename) {
 		$super(id);
 		this.filename = filename;
 	}
 });
 
-org.korsakow.domain.Video = Class.register('org.korsakow.domain.Video', org.korsakow.domain.Media, {
+Class.register('org.korsakow.domain.Video', org.korsakow.domain.Media, {
 	initialize: function($super, id, filename, subtitlesFilename) {
 		$super(id, filename);
 		this.subtitlesFilename = subtitlesFilename;
 	}
 });
 
-org.korsakow.domain.Sound = Class.register('org.korsakow.domain.Sound', org.korsakow.domain.Media, {
+Class.register('org.korsakow.domain.Sound', org.korsakow.domain.Media, {
 	initialize: function($super, id, filename){
 		$super(id,filename);
 	}
 });
 
-org.korsakow.domain.Image = Class.register('org.korsakow.domain.Image', org.korsakow.domain.Media, {
+Class.register('org.korsakow.domain.Image', org.korsakow.domain.Media, {
 	initialize: function($super, id, filename, duration) {
 		$super(id, filename);
 		this.duration = duration;
 	}
 });
 
-org.korsakow.domain.Snu = Class.register('org.korsakow.domain.Snu', org.korsakow.domain.DomainObject, {
-	initialize: function($super, id, name, keywords, mainMedia, previewMedia, interface, events, lives, looping, starter, insertText, rating, backgroundSoundMode, backgroundSoundLooping, backgroundSoundMedia, backgroundSoundVolume) {
+Class.register('org.korsakow.domain.Snu', org.korsakow.domain.DomainObject, {
+	initialize: function($super, id, name, keywords, mainMedia, previewImage, previewMedia, interface, events, lives, looping, starter, insertText, previewText, rating, backgroundSoundMode, backgroundSoundLooping, backgroundSoundMedia, backgroundSoundVolume) {
 		$super(id);
 		this.name = name;
 		this.keyword = keywords;
 		this.mainMedia = mainMedia;
-		this.previewMedia = previewMedia;
+        this.previewImage = previewImage;
+        this.previewMedia = previewMedia;
 		this.interface = interface;
 		this.events = events;
 		this.lives = lives;
 		this.looping = looping;
 		this.start = starter;
 		this.insertText = insertText;
+		this.previewText = previewText;
 		this.rating = rating;
 		this.backgroundSoundMode = backgroundSoundMode;
 		this.backgroundSoundLooping = backgroundSoundLooping;
@@ -100,7 +101,7 @@ org.korsakow.domain.Snu = Class.register('org.korsakow.domain.Snu', org.korsakow
 	}
 });
 
-org.korsakow.domain.Event = Class.register('org.korsakow.domain.Event', org.korsakow.domain.DomainObject, {
+Class.register('org.korsakow.domain.Event', org.korsakow.domain.DomainObject, {
 	initialize: function($super, id, predicate, trigger, rule) {
 		$super(id);
 		this.id = id;
@@ -126,7 +127,7 @@ org.korsakow.domain.Event = Class.register('org.korsakow.domain.Event', org.kors
 /**
  * Executes an event's rules after <time> seconds.
  */
-org.korsakow.domain.trigger.SnuTime = Class.register('org.korsakow.domain.trigger.SnuTime', org.korsakow.domain.DomainObject, {
+Class.register('org.korsakow.domain.trigger.SnuTime', org.korsakow.domain.DomainObject, {
 	initialize: function($super, id, time) {
 		$super(id);
 		this.id = id;
@@ -157,7 +158,7 @@ org.korsakow.domain.trigger.SnuTime = Class.register('org.korsakow.domain.trigge
 	}
 });
 
-org.korsakow.domain.Interface = Class.register('org.korsakow.domain.Interface', org.korsakow.domain.DomainObject, {
+Class.register('org.korsakow.domain.Interface', org.korsakow.domain.DomainObject, {
 	initialize: function($super, id, name, keywords, widgets, clickSound, backgroundColor, backgroundImage) {
 		$super(id);
 		this.name = name;
@@ -169,8 +170,8 @@ org.korsakow.domain.Interface = Class.register('org.korsakow.domain.Interface', 
 	}
 });
 
-org.korsakow.domain.Project = Class.register('org.korsakow.domain.Project', org.korsakow.domain.DomainObject, {
-	initialize: function($super, id, name, width, height, splashScreenMedia, backgroundSoundMedia, backgroundSoundVolume, backgroundSoundLooping, clickSound, backgroundColor, backgroundImage) {
+Class.register('org.korsakow.domain.Project', org.korsakow.domain.DomainObject, {
+	initialize: function($super, id, name, width, height, splashScreenMedia, backgroundSoundMedia, backgroundSoundVolume, backgroundSoundLooping, clickSound, backgroundColor, backgroundImage, maxLinks) {
 		$super(id);
 		this.name = name;
 		this.width = width;
@@ -182,10 +183,11 @@ org.korsakow.domain.Project = Class.register('org.korsakow.domain.Project', org.
 		this.clickSound = clickSound;
 		this.backgroundColor = backgroundColor;
 		this.backgroundImage = backgroundImage;
+		this.maxLinks = maxLinks;
 	}
 });
 
-org.korsakow.SearchResults = Class.register('org.korsakow.SearchResults', {
+Class.register('org.korsakow.SearchResults', {
 	initialize: function() {
 		this.results = [];
 		this.keywords = [];
@@ -277,7 +279,7 @@ org.korsakow.SearchResult = Class.register('org.korsakow.SearchResult', {
 	}
 });
 
-org.korsakow.SoundManager = Class.register('org.korsakow.SoundManager', {
+Class.register('org.korsakow.SoundManager', {
 	initialize: function($super) {
 		$super();
 		this.channels = {};

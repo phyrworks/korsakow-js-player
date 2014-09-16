@@ -14,82 +14,62 @@ NS('org.korsakow.domain.widget');
 /* Locates XML nodes by various criteria
  * 
  */
-org.korsakow.domain.Finder = Class.register('org.korsakow.domain.Finder', {
+Class.register('org.korsakow.domain.Finder', {
 	/*
 	 * @param data jQuery-wrapped XML
 	 */
 	initialize: function($super, data) {
 		$super();
 		this.data = data;
+		this.idIndex = {};
+		this.snuKeywordIndex = {};
+		
+		var thisFinder = this;
+		function buildIndices() {
+		    ['videos', 'images', 'sounds', 'texts', 'interfaces', 'snus'].forEach(function(type) {
+		        thisFinder.data && thisFinder.data[type] && thisFinder.data[type].forEach(function(d) {
+	                thisFinder.idIndex[d.id] = d;
+	                
+	                if (type === 'snus') {
+    	                d.keywords && d.keywords.forEach(function(k) {
+    	                    var value = k.value;
+    	                    thisFinder.snuKeywordIndex[value] = thisFinder.snuKeywordIndex[value] || [];
+    	                    thisFinder.snuKeywordIndex[value].push(d);
+    	                });
+	                }
+	            });
+		    });
+		}
+        var before = org.korsakow.Date.now();
+		buildIndices();
+        var after = org.korsakow.Date.now();
+        
+        org.korsakow.log.info("Building indices took " + (after-before) + "ms");
+        org.korsakow.log.info('IdIndex size: ', Object.keys(this.idIndex).length);
+        org.korsakow.log.info('SnuKeywordIndex size', Object.keys(this.snuKeywordIndex).length);
 	},
 	/**
 	 * @param id the id of the object to find, corresponds to the <id> tag in the xml
 	 * @param opts currently not used
 	 */
 	findById: function(id, opts) {
-		opts = opts || {};
-		var result = this.data;
-		result = result.find("id").filter(function(i, elem) {
-			return $(elem).text() === id.toString();
-		});
-		result = result.parent();
-		return result;
+	    return this.idIndex[id];
 	},
-	findMediaById:function(id, opts) {
-		opts = opts || {};
-		opts.type = ['Video','Image','Sound'];
+	findMediaById: function(id, opts) {
 		return this.findById(id, opts);
 	},
-	/**
-	 * @param opts {
-	 * 	parent: id of containing element
-	 *  keyword
-	 *  type: element name to match on
-	 *  path: the list / separates path of elements to find
-	 *  	one of type or path is requred
-	 *  props: key/value map to match on
-	 * }
-	 * @returns {Array}
-	 */
-	find: function(opts) {
-		opts = opts || {};
-		var result = this.data;
-		if (opts.parent) {
-			result = result.find("id").filter(function(i, elem) {
-				return $(elem).text() == opts.parent.toString(); // string conversion via == intentional
-			}).parent();
-			if (opts.list) {
-				opts.list = $(opts.list);
-				for (var i = 0; i < opts.list.length; ++i)
-					result = result.children(opts.list[i]);
-			}
-		}
-		if (opts.path) {
-			opts.path = opts.path.split('/');
-			var p = result;
-			while (opts.path.length) {
-				var path = opts.path.shift();
-				p = p.children(path);
-			}
-			result = p;
-		} else if (opts.type) {
-			result = result.find(opts.type);
-		}
-		
-		if (opts.keyword) {
-			result = result.filter(function() {
-				var x = $(this).children('keywords').children('Keyword');
-				for (var i = 0; i < x.length; ++i)
-					if ($(x[i]).text() == opts.keyword) {
-						return true;
-					}
-				return false;
-			});
-		}
-
-		/* MAPPING PLUGIN */
-		if (opts.loc) {
-			result = result.filter(function() {
+	findSnusWithKeyword: function(keyword) {
+	    return this.snuKeywordIndex[keyword] && this.snuKeywordIndex[keyword] || [];
+	},
+	findSnusFilter: function(filter) {
+	    return this.data.snus.filter(filter);
+	},
+	findProject: function() {
+	    return this.data.Project;
+	}
+	/* MAPPING PLUGIN */
+	findMapWithLOC: function(loc) {
+		/*return this.data.maps.filter(function() {
 				var x = $(this).children('locs').children('LOC');
 				for (var i = 0; i < x.length; ++i)
 					var value = $(x[i]).children("keyword")[0]; //<-- There should be exactly 1
@@ -99,19 +79,7 @@ org.korsakow.domain.Finder = Class.register('org.korsakow.domain.Finder', {
 					}
 				return false;
 
-			});
-		}
-		
-		if (opts.props) {
-			$.each(opts.props, function(propName, propValue) {
-				result = result.filter(function() {
-					// TODO: something other than string conversion
-					return $(this).children(propName).text() == ""+propValue;
-				});
-			});
-		}
-		
-		return result;
+			});*/
 	}
 });
 
@@ -121,7 +89,7 @@ org.korsakow.domain.DomainObjectNotFoundException = org.korsakow.Exception;
 /* Data Access Object
  * Finds domain objects
  */
-org.korsakow.domain.Dao = Class.register('org.korsakow.domain.Dao', {
+Class.register('org.korsakow.domain.Dao', {
 	/*
 	 * @param $super
 	 * @param finder
@@ -143,66 +111,71 @@ org.korsakow.domain.Dao = Class.register('org.korsakow.domain.Dao', {
 		if (this.idmap[id])
 			return this.idmap[id];
 		var data = this.finder.findById.apply(this.finder, arguments);
-		if (data.length === 0)
+		if (!data)
 			throw new org.korsakow.domain.DomainObjectNotFoundException("DomainObject not found: #" + id);
-		if (data.length > 1)
-			throw new org.korsakow.domain.DomainObjectNotFoundException("Multiple DomainObjects found: #" + id);
-		data = data[0];
-		var mapper = this.getMapper(data.tagName);
-		var obj = mapper.map($(data));
+		var mapper = this.getMapper(data.className);
+		var obj = mapper.map(data);
 		this.idmap[obj.id] = obj;
 		return obj;
 	},
-	findMediaById: function(id) {
-		if (this.idmap[id])
-			return this.idmap[id];
-		var data = this.finder.findMediaById.apply(this.finder, arguments);
-		if (data.length === 0)
-			throw new org.korsakow.domain.DomainObjectNotFoundException("DomainObject not found: #" + id);
-		if (data.length > 1)
-			throw new org.korsakow.domain.DomainObjectNotFoundException("Multiple DomainObjects found: #" + id);
-		data = data[0];
-		var mapper = this.getMapper(data.tagName);
-		var obj = mapper.map($(data));
-		this.idmap[obj.id] = obj;
-		return obj;
+    findMediaById: function(id) {
+        if (this.idmap[id])
+            return this.idmap[id];
+        var data = this.finder.findMediaById.apply(this.finder, arguments);
+        if (!data)
+            throw new org.korsakow.domain.DomainObjectNotFoundException("DomainObject not found: #" + id);
+        var mapper = this.getMapper(data.className);
+        var obj = mapper.map(data);
+        this.idmap[obj.id] = obj;
+        return obj;
+    },
+    findSnusWithKeyword: function(keyword) {
+        return this.finder.findSnusWithKeyword(keyword).map(function(d) {
+            if (this.idmap[d.id])
+                return this.idmap[d.id];
+            var mapper = this.getMapper('Snu');
+            var obj = mapper.map(d);
+            this.idmap[obj.id] = obj;
+            return obj;
+        }.bind(this));
+    },
+    findSnusFilter: function(filter) {
+        return this.finder.findSnusFilter(filter).map(function(d) {
+            if (this.idmap[d.id])
+                return this.idmap[d.id];
+            var mapper = this.getMapper('Snu');
+            var obj = mapper.map(d);
+            this.idmap[obj.id] = obj;
+            return obj;
+        }.bind(this));
+    },
+    findSnus: function() { return this.findSnusFilter(function() { return true; }); },
+    findProject: function() {
+        var d = this.finder.findProject();
+        var mapper = this.getMapper('Project');
+        var obj = mapper.map(d);
+        this.idmap[obj.id] = obj;
+        return obj;
+    },
+	mapKeywords: function(data) {
+	    return data.map(function(datum) {
+	        var mapper = this.getMapper(datum.className);
+	        var obj = mapper.map(datum);
+	        return obj;
+	    }.bind(this));
 	},
-	find: function(opts) {
-		var data = this.finder.find.apply(this.finder, arguments);
-		var result = [];
-		for (var i = 0; i < data.length; ++i) {
-			var datum = $(data[i]);
-			
-			var id = datum.children("id");
-			var haveId = id.length > 0;
-			if (haveId) {
-				id = PU.parseInt(id, 'Dao.find');
-				if (this.idmap[id]) {
-					result.push(this.idmap[id]);
-					continue;
-				}
-			}
-			
-			var mapper = this.getMapper(datum[0].tagName);
-			var obj;
-			try {
-				obj = mapper.map(datum);
-			} catch (e) {
-				if (opts.ignoreError) {
-					org.korsakow.log.warn("Ignoring error while mapping", e);
-					continue;
-				}
-				throw e;
-			}
-			
-			if (haveId) // keywords don't have id...
-				this.idmap[obj.id] = obj;
-			
-			result.push(obj);
-		}
-
-		return result;
-	}
+	map: function(datum) {
+	    var id = datum.id;
+        if (this.idmap[id])
+            return this.idmap[id];
+        var mapper = this.getMapper(datum.className);
+        var obj = mapper.map(datum);
+        this.idmap[obj.id] = obj;
+        return obj;
+	},
+    mapAll: function(data) {
+        return data.map(this.map.bind(this));
+    }
 });
 /* Factory method
  * @param data jQuery-wrapped XML
@@ -247,67 +220,65 @@ var PU = org.korsakow.domain.ParseUtil = Class.register('org.korsakow.domain.Par
 });
 
 org.korsakow.domain.ParseUtil.parseInt = function(expr, message) {
-	if (!expr.length)
-		throw new org.korsakow.domain.ParseException("Not found: " + message);
-	return parseInt(expr.text(), null);
+	if (!org.korsakow.isValue(expr))
+		throw new org.korsakow.domain.ParseException("Int Not found: " + message);
+	return parseInt(expr, null);
 };
 org.korsakow.domain.ParseUtil.parseFloat = function(expr, message) {
-	if (!expr.length)
-		throw new org.korsakow.domain.ParseException("Not found: " + message);
-	return parseFloat(expr.text());
+    if (!org.korsakow.isValue(expr))
+		throw new org.korsakow.domain.ParseException("Float Not found: " + message);
+	return parseFloat(expr);
 };
 org.korsakow.domain.ParseUtil.parseString = function(expr, message) {
-	if (!expr.length)
-		throw new org.korsakow.domain.ParseException("Not found: " + message);
-	return expr.text();
+    if (!org.korsakow.isValue(expr))
+		throw new org.korsakow.domain.ParseException("String Not found: " + message);
+	return expr;
 };
 org.korsakow.domain.ParseUtil.parseBoolean = function(expr, message) {
-	if (!expr.length)
-		throw new org.korsakow.domain.ParseException("Not found: " + message);
-	return expr.text() == "true";
+    if (!org.korsakow.isValue(expr))
+		throw new org.korsakow.domain.ParseException("Boolean Not found: " + message);
+	return !!expr;
 };
 org.korsakow.domain.ParseUtil.parseColor = function(expr, message) {
-	if (!expr.length)
-		throw new org.korsakow.domain.ParseException("Not found: " + message);
-	return expr.text();
+    if (!org.korsakow.isValue(expr))
+		throw new org.korsakow.domain.ParseException("Color Not found: " + message);
+	return expr;
 };
 
-org.korsakow.domain.InputMapper = Class.register('org.korsakow.domain.InputMapper', {
+Class.register('org.korsakow.domain.InputMapper', {
 	initialize: function($super, dao) {
 		$super();
 		this.dao = dao;
 	},
 	parseInt: function(data, prop) {
-		return PU.parseInt(data.children(prop), this.getClass().className + "." + prop + ':' + data.children('id').text());
+		return PU.parseInt(data[prop], this.getClass().qualifiedName + "." + prop + ':' + data['id']);
 	},
 	parseFloat: function(data, prop) {
-		return PU.parseFloat(data.children(prop), this.getClass().className + "." + prop + ':' + data.children('id').text());
+		return PU.parseFloat(data[prop], this.getClass().qualifiedName + "." + prop + ':' + data['id']);
 	},
 	parseString: function(data, prop) {
-		return PU.parseString(data.children(prop), this.getClass().className + "." + prop + ':' + data.children('id').text());
+		return PU.parseString(data[prop], this.getClass().qualifiedName + "." + prop + ':' + data['id']);
 	},
 	parseBoolean: function(data, prop) {
-		return PU.parseBoolean(data.children(prop), this.getClass().className + "." + prop + ':' + data.children('id').text());
+		return PU.parseBoolean(data[prop], this.getClass().qualifiedName + "." + prop + ':' + data['id']);
 	},
 	parseColor: function(data, prop) {
-		return PU.parseColor(data.children(prop), this.getClass().className + "." + prop + ':' + data.children('id').text());
+		return PU.parseColor(data[prop], this.getClass().qualifiedName + "." + prop + ':' + data['id']);
 	}
 });
 
-org.korsakow.domain.KeywordInputMapper = Class.register('org.korsakow.domain.KeywordInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.KeywordInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
 	map: function(data) {
-//		var value = this.parseString(data, "value");
-//		var weight = this.parseString(data, "weight");
-		var value = PU.parseString(data, "Keyword.value");
+		var value = this.parseString(data, "value");
 		var weight = 1;
 		return new org.korsakow.domain.Keyword(value, weight);
 	}
 });
 
-org.korsakow.domain.VideoInputMapper = Class.register('org.korsakow.domain.VideoInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.VideoInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -317,9 +288,9 @@ org.korsakow.domain.VideoInputMapper = Class.register('org.korsakow.domain.Video
 		var filename = this.parseString(data, "filename");
 		filename = filename.substring(0, filename.lastIndexOf('.'));
 
-		var subtitlesTag = data.children('subtitles');
+		var subtitlesTag = data['subtitles'];
 		var subtitlesFilename = (function () {
-			if (subtitlesTag.length === 0) {
+			if (!subtitlesTag) {
 				return null;
 			} else {
 				return This.parseString(data, "subtitles");
@@ -330,7 +301,7 @@ org.korsakow.domain.VideoInputMapper = Class.register('org.korsakow.domain.Video
 	}
 });
 
-org.korsakow.domain.ImageInputMapper = Class.register('org.korsakow.domain.ImageInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.ImageInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -338,7 +309,7 @@ org.korsakow.domain.ImageInputMapper = Class.register('org.korsakow.domain.Image
 		var id = this.parseInt(data, "id");
 		var filename = this.parseString(data, "filename");
 		var duration = (function() {
-			if (data.children("duration").length) {
+			if (org.korsakow.isValue(data["duration"])) {
 				return this.parseFloat(data, "duration");
 			} else {
 				return undefined;
@@ -348,7 +319,7 @@ org.korsakow.domain.ImageInputMapper = Class.register('org.korsakow.domain.Image
 	}
 });
 
-org.korsakow.domain.SoundInputMapper = Class.register('org.korsakow.domain.SoundInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.SoundInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -359,16 +330,24 @@ org.korsakow.domain.SoundInputMapper = Class.register('org.korsakow.domain.Sound
 	}
 });
 
-org.korsakow.domain.SnuInputMapper = Class.register('org.korsakow.domain.SnuInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.SnuInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
 	map: function(data) {
 		var id = this.parseInt(data, "id");
 		var name = this.parseString(data, "name");
+		var keywords = this.dao.mapKeywords(data.keywords);
 		var mainMedia = this.dao.findMediaById(this.parseInt(data, "mainMediaId"));
+        var previewImage = (function() {
+            if (org.korsakow.isValue(data["previewImageId"])) {
+                return this.dao.findMediaById(this.parseInt(data, "previewImageId"));
+            } else {
+                return null;
+            }
+        }).apply(this);
 		var previewMedia = (function() {
-			if (data.children("previewMediaId").length) {
+			if (org.korsakow.isValue(data["previewMediaId"])) {
 				return this.dao.findMediaById(this.parseInt(data, "previewMediaId"));
 			} else {
 				return null;
@@ -376,33 +355,36 @@ org.korsakow.domain.SnuInputMapper = Class.register('org.korsakow.domain.SnuInpu
 		}).apply(this);
 		var interface = this.dao.findById(this.parseInt(data, "interfaceId"));
 		var starter = this.parseBoolean(data, "starter");
-		var events = this.dao.find({parent:id, path: 'events/Event'});
+		var events = this.dao.mapAll(data.events);
 		var lives = (function(){
-			var temp = data.children("lives");
-			if(temp == "NaN")
-				return number.NaN;
-			else
-				return PU.parseInt(temp, "Snu.lives");
+		    if (org.korsakow.isValue(data["lives"]))
+                return PU.parseInt(temp, "Snu.lives");
+		    else
+		        return NaN;
 		}).apply(this);
 		var looping = this.parseBoolean(data, "looping");
 		var insertText = this.parseString(data, "insertText");
+		var previewText = this.parseString(data, "previewText");
 		var rating = this.parseFloat(data, "rating");
 		var backgroundSoundMode = this.parseString(data, "backgroundSoundMode");
 		var backgroundSoundLooping = this.parseString(data, "backgroundSoundLooping");
 		var backgroundSoundVolume = 1.0;
 		var backgroundSoundMedia = (function(){
-			if(data.children("backgroundSoundId").length){
+			if(org.korsakow.isValue(data["backgroundSoundId"])){
 				backgroundSoundVolume = this.parseFloat(data, "backgroundSoundVolume");
 				return this.dao.findById(this.parseInt(data, "backgroundSoundId"));
 			} else
 				return null;
 		}).apply(this);
-		return new org.korsakow.domain.Snu(id, name, [], mainMedia, previewMedia, interface, events, lives, looping, starter, insertText, rating,
-			backgroundSoundMode,backgroundSoundLooping, backgroundSoundMedia, backgroundSoundVolume);
+		return new org.korsakow.domain.Snu(id, name, keywords, 
+		        mainMedia, previewImage, previewMedia, 
+		        interface, events, lives,
+				looping, starter, insertText, previewText, rating,
+				backgroundSoundMode,backgroundSoundLooping, backgroundSoundMedia, backgroundSoundVolume);
 	}
 });
 
-org.korsakow.domain.InterfaceInputMapper = Class.register('org.korsakow.domain.InterfaceInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.InterfaceInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -411,21 +393,21 @@ org.korsakow.domain.InterfaceInputMapper = Class.register('org.korsakow.domain.I
 		var name = this.parseString(data, "name");
 		var keywords = [];
 		// TODO: a better way to gracefully handle unknown widgets than "ignoreError"
-		var widgets = this.dao.find({parent:id, path: 'widgets/Widget', ignoreError: true});
+		var widgets = this.dao.mapAll(data.widgets);
 		var clickSound = (function() {
-			if (data.children("clickSoundId").length) {
+			if (org.korsakow.isValue(data["clickSoundId"])) {
 				var clickSoundId = this.parseInt(data, "clickSoundId");
 				return this.dao.findById(clickSoundId);
 			} else
 				return null;
 		}).apply(this);
 		var backgroundImage = (function() {
-			if (data.children("backgroundImageId").length) {
+			if (org.korsakow.isValue(data["backgroundImageId"])) {
 				return this.dao.findById(this.parseInt(data, "backgroundImageId"));
 			} else
 				return null;
 		}).apply(this);
-		var backgroundColor = data.children("backgroundColor").length?this.parseColor(data, "backgroundColor"):null;
+		var backgroundColor = org.korsakow.isValue(data["backgroundColor"])?this.parseColor(data, "backgroundColor"):null;
 		return new org.korsakow.domain.Interface(id, name, keywords, widgets, clickSound, backgroundColor, backgroundImage);
 	}
 });
@@ -434,7 +416,7 @@ org.korsakow.domain.InterfaceInputMapper = Class.register('org.korsakow.domain.I
 /**
  * This is actually a sort of MetaInputMapper in that it does a lookup for the actual mapper based on the widget's type
  */
-org.korsakow.domain.WidgetInputMapper = Class.register('org.korsakow.domain.WidgetInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.WidgetInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -445,7 +427,7 @@ org.korsakow.domain.WidgetInputMapper = Class.register('org.korsakow.domain.Widg
 	}
 });
 
-org.korsakow.domain.MainMediaInputMapper = Class.register('org.korsakow.domain.MainMediaInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.MainMediaInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -461,7 +443,7 @@ org.korsakow.domain.MainMediaInputMapper = Class.register('org.korsakow.domain.M
 	}
 });
 
-org.korsakow.domain.PreviewInputMapper = Class.register('org.korsakow.domain.PreviewInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.PreviewInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -473,29 +455,53 @@ org.korsakow.domain.PreviewInputMapper = Class.register('org.korsakow.domain.Pre
 		var width = this.parseInt(data, "width");
 		var height = this.parseInt(data, "height");
 		var index = this.parseInt(data, "index");
-		var widget = new org.korsakow.domain.widget.Preview(id, [], type, x, y, width, height, index);
+		
+		var fontColor = this.parseString(data, "fontColor");
+		var fontFamily = this.parseString(data, "fontFamily");
+		var fontSize = this.parseInt(data, "fontSize");
+		var fontStyle = this.parseString(data, "fontStyle");
+		var fontWeight = this.parseString(data, "fontWeight");
+		var textDecoration = this.parseString(data, "textDecoration");
+		
+		var horizontalTextAlignment = this.parseString(data, "horizontalTextAlignment");
+		var verticalTextAlignment = this.parseString(data, "verticalTextAlignment");
+		
+		var previewTextMode = (function() {
+			if (org.korsakow.isValue(data["previewTextMode"])) {
+				return org.korsakow.domain.widget.Preview.PreviewTextMode.fromValue(this.parseString(data, "previewTextMode"));
+			} else
+				return null;
+		}).apply(this);
+		var previewTextEffect = (function() {
+			if (org.korsakow.isValue(data["previewTextEffect"])) {
+				return org.korsakow.domain.widget.Preview.PreviewTextEffect.fromValue(this.parseString(data, "previewTextEffect"));
+			} else
+				return null;
+		}).apply(this);
+		
+		var widget = new org.korsakow.domain.widget.Preview(id, [], type, x, y, width, height, index, fontColor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration, horizontalTextAlignment, verticalTextAlignment, previewTextMode, previewTextEffect);
 		return widget;
 	}
 });
 
-org.korsakow.domain.FixedLinkMapper = Class.register('org.korsakow.domain.FixedLinkMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.FixedLinkMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
 	map: function(data) {
-		var type = PU.parseString(data.children("type"), "FixedPreview.type");
-		var id = PU.parseInt(data.children("id"), "FixedPreview.id");
-		var x = PU.parseInt(data.children("x"), "FixedPreview.x");
-		var y = PU.parseInt(data.children("y"), "FixedPreview.y");
-		var width = PU.parseInt(data.children("width"), "FixedPreview.width");
-		var height = PU.parseInt(data.children("height"), "FixedPreview.height");
-		var snuId = PU.parseInt(data.children("snuId"), "FixedPreview.snuId");
+		var type = PU.parseString(data["type"], "FixedPreview.type");
+		var id = PU.parseInt(data["id"], "FixedPreview.id");
+		var x = PU.parseInt(data["x"], "FixedPreview.x");
+		var y = PU.parseInt(data["y"], "FixedPreview.y");
+		var width = PU.parseInt(data["width"], "FixedPreview.width");
+		var height = PU.parseInt(data["height"], "FixedPreview.height");
+		var snuId = PU.parseInt(data["snuId"], "FixedPreview.snuId");
 		var widget = new org.korsakow.domain.widget.FixedPreview(id, [], type, x, y, width, height, snuId);
 		return widget;
 	}
 });
 
-org.korsakow.domain.InsertTextInputMapper = Class.register('org.korsakow.domain.InsertTextInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.InsertTextInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -507,7 +513,6 @@ org.korsakow.domain.InsertTextInputMapper = Class.register('org.korsakow.domain.
 		var width = this.parseInt(data, "width");
 		var height = this.parseInt(data, "height");
 		var fontColor = this.parseString(data, "fontColor");
-//		var fontBackgroundColor = this.parseString(data, "fontBackgroundColor");
 		var fontFamily = this.parseString(data, "fontFamily");
 		var fontSize = this.parseInt(data, "fontSize");
 		var fontStyle = this.parseString(data, "fontStyle");
@@ -518,7 +523,7 @@ org.korsakow.domain.InsertTextInputMapper = Class.register('org.korsakow.domain.
 		return widget;
 	}
 });
-org.korsakow.domain.PlayButtonInputMapper = Class.register('org.korsakow.domain.PlayButtonInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.PlayButtonInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -534,7 +539,7 @@ org.korsakow.domain.PlayButtonInputMapper = Class.register('org.korsakow.domain.
 		return widget;
 	}
 });
-org.korsakow.domain.PlayTimeInputMapper = Class.register('org.korsakow.domain.PlayTimeInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.PlayTimeInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 		
@@ -547,7 +552,6 @@ org.korsakow.domain.PlayTimeInputMapper = Class.register('org.korsakow.domain.Pl
 		var width = this.parseInt(data, "width");
 		var height = this.parseInt(data, "height");
 		var fontColor = this.parseString(data, "fontColor");
-		//var fontBackgroundColor = this.parseString(data, "fontBackgroundColor");
 		var fontFamily = this.parseString(data, "fontFamily");
 		var fontSize = this.parseInt(data, "fontSize");
 		var fontStyle = this.parseString(data, "fontStyle");
@@ -559,7 +563,7 @@ org.korsakow.domain.PlayTimeInputMapper = Class.register('org.korsakow.domain.Pl
 	}
 });
 
-org.korsakow.domain.TotalTimeInputMapper = Class.register('org.korsakow.domain.TotalTimeInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.TotalTimeInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 		
@@ -572,7 +576,6 @@ org.korsakow.domain.TotalTimeInputMapper = Class.register('org.korsakow.domain.T
 		var width = this.parseInt(data, "width");
 		var height = this.parseInt(data, "height");
 		var fontColor = this.parseString(data, "fontColor");
-		//var fontBackgroundColor = this.parseString(data, "fontBackgroundColor");
 		var fontFamily = this.parseString(data, "fontFamily");
 		var fontSize = this.parseInt(data, "fontSize");
 		var fontStyle = this.parseString(data, "fontStyle");
@@ -584,7 +587,7 @@ org.korsakow.domain.TotalTimeInputMapper = Class.register('org.korsakow.domain.T
 	}
 });
 
-org.korsakow.domain.ScrubberInputMapper = Class.register('org.korsakow.domain.ScrubberInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.ScrubberInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 		
@@ -608,7 +611,7 @@ org.korsakow.domain.ScrubberInputMapper = Class.register('org.korsakow.domain.Sc
 		return widget;
 	}
 });
-org.korsakow.domain.FullscreenButtonInputMapper = Class.register('org.korsakow.domain.FullscreenButtonInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.FullscreenButtonInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 		
@@ -626,7 +629,7 @@ org.korsakow.domain.FullscreenButtonInputMapper = Class.register('org.korsakow.d
 	}
 });
 
-org.korsakow.domain.MasterVolumeInputMapper = Class.register('org.korsakow.domain.MasterVolumeButtonInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.MasterVolumeInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 		
@@ -644,7 +647,7 @@ org.korsakow.domain.MasterVolumeInputMapper = Class.register('org.korsakow.domai
 	}
 });
 
-org.korsakow.domain.SubtitlesInputMapper = Class.register('org.korsakow.domain.SubtitlesInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.SubtitlesInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -683,21 +686,21 @@ org.korsakow.domain.SubtitlesInputMapper = Class.register('org.korsakow.domain.S
 	}
 });
 
-org.korsakow.domain.EventInputMapper = Class.register('org.korsakow.domain.EventInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.EventInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
 	map: function(data) {
 		var id = this.parseInt(data, "id");
-		var predicate = this.dao.find({parent: id, path: 'Predicate'})[0];
-		var trigger = this.dao.find({parent: id, path: 'Trigger'})[0];
-		var rule = this.dao.find({parent: id, path: 'Rule'})[0];
+		var predicate = this.dao.map(data.Predicate);
+		var trigger = this.dao.map(data.Trigger);
+		var rule = this.dao.map(data.Rule);
 		var event = new org.korsakow.domain.Event(id, predicate, trigger, rule);
 		return event;
 	}
 });
 
-org.korsakow.domain.PredicateInputMapper = Class.register('org.korsakow.domain.PredicateInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.PredicateInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -710,7 +713,7 @@ org.korsakow.domain.PredicateInputMapper = Class.register('org.korsakow.domain.P
 	}
 });
 
-org.korsakow.domain.TriggerInputMapper = Class.register('org.korsakow.domain.TriggerInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.TriggerInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -722,7 +725,7 @@ org.korsakow.domain.TriggerInputMapper = Class.register('org.korsakow.domain.Tri
 	}
 });
 
-org.korsakow.domain.trigger.SnuTimeInputMapper = Class.register('org.korsakow.domain.trigger.SnuTimeInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.trigger.SnuTimeInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -738,7 +741,7 @@ org.korsakow.domain.trigger.SnuTimeInputMapper = Class.register('org.korsakow.do
 /**
  * This is actually a sort of MetaInputMapper in that it does a lookup for the actual mapper based on the rule's type
  */
-org.korsakow.domain.RuleInputMapper = Class.register('org.korsakow.domain.RuleInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.RuleInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -749,47 +752,47 @@ org.korsakow.domain.RuleInputMapper = Class.register('org.korsakow.domain.RuleIn
 	}
 });
 
-org.korsakow.domain.KeywordLookupInputMapper = Class.register('org.korsakow.domain.KeywordLookupInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.KeywordLookupInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
 	map: function(data) {
 		var type = this.parseString(data, "type");
 		var id = this.parseInt(data, "id");
-		var keywords = this.dao.find({parent: id, path: 'keywords/Keyword', });
+		var keywords = this.dao.mapKeywords(data.keywords);
 		var rule = new org.korsakow.domain.rule.KeywordLookup(id, keywords, type);
 		return rule;
 	}
 });
-org.korsakow.domain.ExcludeKeywordsInputMapper = Class.register('org.korsakow.domain.ExcludeKeywordsInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.ExcludeKeywordsInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
 	map: function(data) {
 		var type = this.parseString(data, "type");
 		var id = this.parseInt(data, "id");
-		var keywords = this.dao.find({parent: id, path: 'keywords/Keyword'});
+		var keywords = this.dao.mapKeywords(data.keywords);
 		var rule = new org.korsakow.domain.rule.ExcludeKeywords(id, keywords, type);
 		return rule;
 	}
 });
 
-org.korsakow.domain.SearchInputMapper = Class.register('org.korsakow.domain.SearchInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.SearchInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
 	map: function(data) {
 		var type = this.parseString(data, "type");
 		var id = this.parseInt(data, "id");
-		var rules = this.dao.find({parent:id, path: 'rules/Rule'});
-		var maxLinks = data.children("maxLinks").length?this.parseInt(data, "maxLinks"):null;
+		var rules = this.dao.mapAll(data.rules);
+		var maxLinks = org.korsakow.isValue(data["maxLinks"])?this.parseInt(data, "maxLinks"):null;
 		var rule = new org.korsakow.domain.rule.Search(id, [], type, rules, maxLinks);
 		return rule;
 	}
 });
 //
 
-org.korsakow.domain.ProjectInputMapper = Class.register('org.korsakow.domain.ProjectInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.domain.ProjectInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -799,7 +802,7 @@ org.korsakow.domain.ProjectInputMapper = Class.register('org.korsakow.domain.Pro
 		var width = this.parseInt(data, "movieWidth");
 		var height = this.parseInt(data, "movieHeight");
 		var splashScreenMedia = (function() {
-			if (data.children("splashScreenMediaId").length) {
+			if (org.korsakow.isValue(data["splashScreenMediaId"])) {
 				return this.dao.findById(this.parseInt(data, "splashScreenMediaId"));
 			} else
 				return null;
@@ -808,7 +811,7 @@ org.korsakow.domain.ProjectInputMapper = Class.register('org.korsakow.domain.Pro
 		var backgroundSoundVolume = 1.0;
 		var backgroundSoundLooping = true;
 		var backgroundSoundMedia = (function() {
-			if(data.children("backgroundSoundId").length) {
+			if(org.korsakow.isValue(data["backgroundSoundId"])) {
 				backgroundSoundVolume = this.parseFloat(data, "backgroundSoundVolume");
 				backgroundSoundLooping = this.parseBoolean(data, "backgroundSoundLooping");
 				return this.dao.findById(this.parseInt(data, "backgroundSoundId"));
@@ -817,25 +820,30 @@ org.korsakow.domain.ProjectInputMapper = Class.register('org.korsakow.domain.Pro
 		}).apply(this);
 
 		var clickSound = (function() {
-			if (data.children("clickSoundId").length) {
+			if (org.korsakow.isValue(data["clickSoundId"])) {
 				var clickSoundId = this.parseInt(data, "clickSoundId");
 				return this.dao.findById(clickSoundId);
 			} else
 				return null;
 		}).apply(this);
-		var backgroundColor = data.children("backgroundColor").length?this.parseColor(data, "backgroundColor"):null;
+		var backgroundColor = org.korsakow.isValue(data["backgroundColor"])?this.parseColor(data, "backgroundColor"):null;
 		var backgroundImage = (function() {
-			if (data.children("backgroundImageId").length) {
+			if (org.korsakow.isValue(data["backgroundImageId"])) {
 				return this.dao.findById(this.parseInt(data, "backgroundImageId"));
 			} else
 				return null;
 		}).apply(this);
-		return new org.korsakow.domain.Project(id, name, width, height, splashScreenMedia, backgroundSoundMedia, backgroundSoundVolume, backgroundSoundLooping, clickSound, backgroundColor, backgroundImage);
-
+		var maxLinks = (function() {
+		    if (org.korsakow.isValue(data['maxLinks'])) {
+		        return this.parseInt(data, 'maxLinks');
+		    } else
+		        return null;
+		}).apply(this);
+		return new org.korsakow.domain.Project(id, name, width, height, splashScreenMedia, backgroundSoundMedia, backgroundSoundVolume, backgroundSoundLooping, clickSound, backgroundColor, backgroundImage, maxLinks);
 	}
 });
 
-org.korsakow.domain.InputMapperFactory = Class.register('org.korsakow.domain.InputMapperFactory', org.korsakow.Factory, {
+Class.register('org.korsakow.domain.InputMapperFactory', org.korsakow.Factory, {
 	initialize: function($super) {
 		$super("InputMapperFactory");
 	}

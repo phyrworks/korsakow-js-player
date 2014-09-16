@@ -1,6 +1,6 @@
 NS('org.korsakow');
 
-org.korsakow.Bootstrap = Class.register('org.korsakow.Bootstrap',org.korsakow.Object,{
+Class.register('org.korsakow.Bootstrap',org.korsakow.Object, {
 	initialize: function($super, dao, domRoot) {
 		$super();
 		this.dao = dao;
@@ -8,18 +8,13 @@ org.korsakow.Bootstrap = Class.register('org.korsakow.Bootstrap',org.korsakow.Ob
 	},
 	
 	findStartSnu: function() {
-		var startSnus = this.dao.find({
-			type: "Snu",
-			props: {
-				starter: true
-			}
+		var startSnus = this.dao.findSnusFilter(function(s) {
+		    return s.starter;
 		});
 		if (!startSnus.length) {
 			org.korsakow.log.debug('Film has no start Snus');
 			
-			startSnus = this.dao.find({
-				type: "Snu",
-			});
+			startSnus = this.dao.findSnus();
 		}
 		
 		return startSnus[Math.floor(Math.random() * startSnus.length)];
@@ -34,7 +29,7 @@ org.korsakow.Bootstrap = Class.register('org.korsakow.Bootstrap',org.korsakow.Ob
 				deferred.resolve();
 			}
 			
-			var splashScreenUI = this.env.createMediaUI(this.env.project.splashScreenMedia.getClass().className, this.env.project.splashScreenMedia);
+			var splashScreenUI = this.env.createMediaUI(this.env.project.splashScreenMedia.getClass().qualifiedName, this.env.project.splashScreenMedia);
 			splashScreenUI.load(this.env.resolvePath(this.env.project.splashScreenMedia.filename));
 			splashScreenUI.element.addClass('SplashScreen');
 
@@ -62,6 +57,8 @@ org.korsakow.Bootstrap = Class.register('org.korsakow.Bootstrap',org.korsakow.Ob
 	 * @param dao an {org.korsakow.domain.Dao}
 	 */
 	start: function() {
+	    org.korsakow.log.info("Is iOS? " + org.korsakow.Support.isIOS());
+	    
 		var This = this;
 		var view = this.view = this.domRoot.find("#view");
 		view.empty();
@@ -77,7 +74,7 @@ org.korsakow.Bootstrap = Class.register('org.korsakow.Bootstrap',org.korsakow.Ob
 		
 		var env = this.env = new org.korsakow.Environment(view, this.dao, localStorage);
 	
-		env.project = this.dao.find({type: "Project"})[0];
+		env.project = this.dao.findProject();
 		
 		function aspect() {
 			var doc = jQuery(window);
@@ -145,10 +142,13 @@ org.korsakow.Bootstrap = Class.register('org.korsakow.Bootstrap',org.korsakow.Ob
 				if (env.getLastSnu()) {
 					org.korsakow.log.debug('Attempting to continue from Snu #' + env.getLastSnu());
 					//test the last snu and make sure it's legit
-					var continueSnu = This.dao.find({
-						type: "Snu",
-						props: { id: env.getLastSnu() }
-					})[0];
+					var continueSnu = (function() {
+					    try {
+					        return This.dao.findById(env.getLastSnu());
+					    } catch (e) {
+					        return null;
+					    }
+					})();
 					
 					if (!continueSnu) {
 						org.korsakow.log.debug("Continue-Snu is not valid");

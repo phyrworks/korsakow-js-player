@@ -87,6 +87,9 @@ html, body {
 .Preview {
 	cursor: pointer;
 }
+.Preview .previewText {
+	pointer-events: none;
+}
 
 .MasterVolume {
 	background: url('../images/mastervolume_scale.png') repeat-x;

@@ -9,7 +9,7 @@ org.korsakow.util.SubtitleException = org.korsakow.Exception;
  * @param duration: uint the length of time the subtitle is shown for
  * @param subtitle: Array[String] the lines of text of the subtitle
  */
-org.korsakow.util.SubtitleCuePoint = Class.register('org.korsakow.util.SubtitleCuePoint', {
+Class.register('org.korsakow.util.SubtitleCuePoint', {
 	initialize: function($super, name, time, duration, subtitle) {
 		$super();
 		this.name = name;
@@ -22,7 +22,7 @@ org.korsakow.util.SubtitleCuePoint = Class.register('org.korsakow.util.SubtitleC
 /* Parses subtitles in the SRT (http://en.wikipedia.org/wiki/SubRip) format. 
  * 
  */
-org.korsakow.util.StrSubtitleParser = Class.register('org.korsakow.SubtitleParser', {
+Class.register('org.korsakow.util.SrtSubtitleParser', {
 	initialize: function($super) {
 		$super();
 		this.timeLinePattern = /([0-9]{2}):([0-9]{2}):([0-9]{2}),([0-9]{3}) --> ([0-9]{2}):([0-9]{2}):([0-9]{2}),([0-9]{3})/;
@@ -60,12 +60,13 @@ org.korsakow.util.StrSubtitleParser = Class.register('org.korsakow.SubtitleParse
 		if ( count != counter + 1 )
 			throw new org.korsakow.util.SubtitleException("inconsistant file at line #" + (offset) + " ; " + count + "!=" + (counter + 1));
 		
-		var match = this.timeLinePattern.exec( lines[offset++] );
+		var line = lines[offset++];
+		var match = this.timeLinePattern.exec( line );
 		if (!match)
-			throw new org.korsakow.util.SubtitleException("invalid time at line #" + (offset));
-		var begin = this.getTime(match[1], match[2], match[3], match[4]) / 1000;
-		var end   = this.getTime(match[5], match[6], match[7], match[8]) / 1000;
-		
+			throw new org.korsakow.util.SubtitleException("invalid time at line #" + (offset) + ': ' + line);
+		var begin = this.getTime(match[1], match[2], match[3], match[4]);
+		var end   = this.getTime(match[5], match[6], match[7], match[8]);
+
 		var content = [];
 		for (; offset < lines.length; ++offset) {
 			if (!lines[offset].length) {
@@ -89,6 +90,7 @@ org.korsakow.util.StrSubtitleParser = Class.register('org.korsakow.SubtitleParse
 	 * @return uint
 	 */
 	getTime: function(hh, mm, ss, ms) {
-		return (parseInt(hh)*60*60 + parseInt(mm)*60 + parseInt(ss)) * 1000 + parseInt(ms);
+	    // specify the radix to avoid octal interpretations in some browsers (e.g. PhantomJS) since we capture leading zeros
+		return (parseInt(hh, 10)*60*60 + parseInt(mm, 10)*60 + parseInt(ss, 10)) * 1000 + parseInt(ms, 10);
 	}
 });

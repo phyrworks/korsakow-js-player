@@ -7,7 +7,7 @@ var W = org.korsakow.WrapCallback;
  */
 org.korsakow.controller.WidgetControllerFactory = new org.korsakow.Factory();
 
-org.korsakow.controller.AbstractWidgetController = Class.register('org.korsakow.controller.AbstractWidgetController', org.korsakow.controller.AbstractController, {
+Class.register('org.korsakow.controller.AbstractWidgetController', org.korsakow.controller.AbstractController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -46,7 +46,7 @@ org.korsakow.controller.AbstractWidgetController = Class.register('org.korsakow.
 			'color': this.model.fontColor,
 			'background-color' : this.model.fontBackgroundColor,
 			'font-family': this.model.fontFamily,
-			'font-size': this.model.fontSize,
+			'font-size': this.model.fontSize + 'pt',
 			'font-weight': this.model.fontWeight,
 			'font-style': this.model.fontStyle,
 			'text-decoration': this.model.textDecoration,
@@ -56,7 +56,7 @@ org.korsakow.controller.AbstractWidgetController = Class.register('org.korsakow.
 	}
 });
 
-org.korsakow.controller.MainMediaWidgetController = Class.register('org.korsakow.controller.MainMediaWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.MainMediaWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -66,7 +66,7 @@ org.korsakow.controller.MainMediaWidgetController = Class.register('org.korsakow
 		var media = snu.mainMedia;
 		
 		this.element.addClass("MainMedia");
-		var mediaUI = this.view = env.createMediaUI(media.getClass().className, media);
+		var mediaUI = this.view = env.createMediaUI(media.getClass().qualifiedName, media);
 		this.element.append(mediaUI.element);
 		mediaUI.element.css({
 			width: "100%",
@@ -105,7 +105,7 @@ org.korsakow.controller.MainMediaWidgetController = Class.register('org.korsakow
 	
 });
 
-org.korsakow.controller.PreviewWidgetController = Class.register('org.korsakow.controller.PreviewWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.PreviewWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 		this.mediaUI = null;
@@ -115,6 +115,13 @@ org.korsakow.controller.PreviewWidgetController = Class.register('org.korsakow.c
 		$super(env);
 
 		this.element.addClass("Preview");
+		this.textElement = jQuery('<div/>')
+			.addClass('previewText')
+			.css({
+				position: 'absolute'
+			})
+			.appendTo(this.element);
+		
 		this.shouldPlay = false;
 		var This = this;
 		this.element.click(W(function() {
@@ -148,7 +155,14 @@ org.korsakow.controller.PreviewWidgetController = Class.register('org.korsakow.c
 	setSnu: function(snu) {
 		this.clear();
 		var media = snu.previewMedia;
-		var mediaUI = this.env.createMediaUI(media.getClass().className, media);
+		if (org.korsakow.Support.isIOS() && snu.previewImage) {
+		    media = snu.previewImage;
+		}
+		
+		if (!media) {
+		    return;
+		}
+		var mediaUI = this.env.createMediaUI(media.getClass().qualifiedName, media);
 		this.element.append(mediaUI.element);
 		mediaUI.element.css({
 			width: "100%",
@@ -156,13 +170,25 @@ org.korsakow.controller.PreviewWidgetController = Class.register('org.korsakow.c
 		});
 		mediaUI.load(this.env.resolvePath(media.filename));
 		mediaUI.loop(true);
+		
+		if (snu.previewText) {
+			this.setupPreviewText(snu.previewText);
+		}
+		
+		
 		this.snu = snu;
 		this.mediaUI = mediaUI;
+	},
+	getSnu: function() {
+	    return this.snu;
 	},
 	clear: function() {
 		if (this.mediaUI !== null) {
 			this.mediaUI.pause(); 
 			this.element.empty();
+		}
+		if (this.tween) {
+		    this.tween.cancel();
 		}
 		this.mediaUI = null;
 		this.snu = null;
@@ -177,10 +203,46 @@ org.korsakow.controller.PreviewWidgetController = Class.register('org.korsakow.c
 	},
 	pause: function() {
 		this.mediaUI && this.mediaUI.pause();
+	},
+	applyPreviewText: function(text) {
+	    switch (this.model.previewTextEffect) {
+            case org.korsakow.domain.widget.Preview.PreviewTextEffect.None:
+                this.textElement.html(text);
+                break;
+            case org.korsakow.domain.widget.Preview.PreviewTextEffect.Animate:
+                var charsPerSecond = 25;
+                var duration = text.length*1000/charsPerSecond;
+                if (this.tween) {
+                    this.tween.cancel();
+                }
+                this.tween = org.korsakow.Tween.run(duration, 0, text.length, function(event, t) {
+                    this.textElement.html(text.substring(0, t));
+                }.bind(this));
+                this.tween.start();
+                break;
+	    }
+	},
+	setupPreviewText: function(text) {
+		switch (this.model.previewTextMode) {
+			case org.korsakow.domain.widget.Preview.PreviewTextMode.Always:
+				this.applyPreviewText(text);
+				break;
+			case org.korsakow.domain.widget.Preview.PreviewTextMode.MouseOver:
+				this.element.bind('mouseenter touchstart', function() {
+					this.applyPreviewText(text);
+				}.bind(this));
+				this.element.bind('mouseleave touchend touchcancel', function() {
+					this.applyPreviewText('');
+				}.bind(this));
+				break;
+			default:
+				org.korsakow.log.warn('unknown previewTextMode: ' + this.model.previewTextMode);
+				break;
+		}
 	}
 });
 
-org.korsakow.controller.FixedPreviewWidgetController = Class.register('org.korsakow.controller.FixedPreviewWidgetController', org.korsakow.controller.PreviewWidgetController, {
+Class.register('org.korsakow.controller.FixedPreviewWidgetController', org.korsakow.controller.PreviewWidgetController, {
 	setup: function ($super, env) {
 		$super(env);
 		var snu = env.dao.findById(this.model.snuId);
@@ -188,7 +250,7 @@ org.korsakow.controller.FixedPreviewWidgetController = Class.register('org.korsa
 	}
 });
 
-org.korsakow.controller.InsertTextWidgetController = Class.register('org.korsakow.controller.InsertTextWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.InsertTextWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -207,7 +269,7 @@ org.korsakow.controller.InsertTextWidgetController = Class.register('org.korsako
 	}
 });
 
-org.korsakow.controller.PlayButtonWidgetController = Class.register('org.korsakow.controller.PlayButtonWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.PlayButtonWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -254,7 +316,7 @@ org.korsakow.controller.PlayButtonWidgetController = Class.register('org.korsako
 	}
 });
 
-org.korsakow.controller.PlayTimeWidgetController = Class.register('org.korsakow.controller.PlayTimeWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.PlayTimeWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -289,7 +351,7 @@ org.korsakow.controller.PlayTimeWidgetController = Class.register('org.korsakow.
 	}
 });
 
-org.korsakow.controller.TotalTimeWidgetController = Class.register('org.korsakow.controller.TotalTimeWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.TotalTimeWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -324,7 +386,7 @@ org.korsakow.controller.TotalTimeWidgetController = Class.register('org.korsakow
 		this.element.append(totalTimeContent);
 	}
 });
-org.korsakow.controller.ScrubberWidgetController = Class.register('org.korsakow.controller.ScrubberWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.ScrubberWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -398,7 +460,7 @@ org.korsakow.controller.ScrubberWidgetController = Class.register('org.korsakow.
 	}
 });
 
-org.korsakow.controller.FullscreenButtonWidgetController = Class.register('org.korsakow.controller.FullscreenButtonWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.FullscreenButtonWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -423,7 +485,7 @@ org.korsakow.controller.FullscreenButtonWidgetController = Class.register('org.k
 	}
 });
 
-org.korsakow.controller.MasterVolumeWidgetController = Class.register('org.korsakow.controller.MasterVolumeWidgetController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.MasterVolumeWidgetController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -462,7 +524,7 @@ org.korsakow.controller.MasterVolumeWidgetController = Class.register('org.korsa
 
 });
 
-org.korsakow.controller.SubtitlesController = Class.register('org.korsakow.controller.SubtitlesController', org.korsakow.controller.AbstractWidgetController, {
+Class.register('org.korsakow.controller.SubtitlesController', org.korsakow.controller.AbstractWidgetController, {
 	initialize: function($super, model) {
 		$super(model);
 	},
@@ -507,7 +569,7 @@ org.korsakow.controller.SubtitlesController = Class.register('org.korsakow.contr
 			url: filePath,
 			success: function(data) {
 				if (filePath.match(/[.]srt$/)) {
-					var parser = new org.korsakow.util.StrSubtitleParser();
+					var parser = new org.korsakow.util.SrtSubtitleParser();
 					cuePoints = parser.parse(data);
 				} else if (filePath.match(/[.]txt$/)) {
 					cuePoints = this.parseK3CuePoints(data);

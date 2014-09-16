@@ -28,7 +28,7 @@ describe("org.korsakow.domain.rule.ExcludeKeyword", function() {
         ];
 
 		var dao = mock(org.korsakow.domain.Dao);
-		when(dao).find().thenReturn(matchingSnus);
+		when(dao).findSnusWithKeyword().thenReturn(matchingSnus);
 
 		var env = mock(org.korsakow.Environment);
 		when(env).getDao().thenReturn(dao);
