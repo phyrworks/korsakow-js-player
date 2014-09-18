@@ -8,7 +8,7 @@ Number.prototype.mod = function(n) {
 }
 
 
-org.korsakow.mappingplugin.ui.MapUI = Class.register('org.korsakow.mappingplugin.ui.MapUI', {
+Class.register('org.korsakow.mappingplugin.ui.MapUI', {
 	initialize: function($super, env, model) {
 		$super();
 

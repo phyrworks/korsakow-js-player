@@ -23,10 +23,12 @@ Class.register('org.korsakow.domain.Finder', {
 		this.data = data;
 		this.idIndex = {};
 		this.snuKeywordIndex = {};
+		/* MAPPING PLUGIN */
+		this.mapLocIndex = {};
 		
 		var thisFinder = this;
 		function buildIndices() {
-		    ['videos', 'images', 'sounds', 'texts', 'interfaces', 'snus'].forEach(function(type) {
+		    ['videos', 'images', 'sounds', 'texts', 'interfaces', 'snus', 'maps'].forEach(function(type) {
 		        thisFinder.data && thisFinder.data[type] && thisFinder.data[type].forEach(function(d) {
 	                thisFinder.idIndex[d.id] = d;
 	                
@@ -36,6 +38,12 @@ Class.register('org.korsakow.domain.Finder', {
     	                    thisFinder.snuKeywordIndex[value] = thisFinder.snuKeywordIndex[value] || [];
     	                    thisFinder.snuKeywordIndex[value].push(d);
     	                });
+	                } else if (type === 'maps') { /* MAPPING PLUGIN */
+	                	d.locs && d.locs.forEach(function(k) {
+	                		var value = k.value;
+	                		thisFinder.mapLocIndex[value] = thisFinder.mapLocIndex[value] || [];
+	                		thisFinder.mapLocIndex[value].push(d);
+	                	})
 	                }
 	            });
 		    });
@@ -47,6 +55,7 @@ Class.register('org.korsakow.domain.Finder', {
         org.korsakow.log.info("Building indices took " + (after-before) + "ms");
         org.korsakow.log.info('IdIndex size: ', Object.keys(this.idIndex).length);
         org.korsakow.log.info('SnuKeywordIndex size', Object.keys(this.snuKeywordIndex).length);
+        org.korsakow.log.info('MapLocIndex size', Object.keys(this.mapLocIndex).length);
 	},
 	/**
 	 * @param id the id of the object to find, corresponds to the <id> tag in the xml
@@ -64,6 +73,12 @@ Class.register('org.korsakow.domain.Finder', {
 	findSnusFilter: function(filter) {
 	    return this.data.snus.filter(filter);
 	},
+
+	/* MAPPING PLUGIN */
+	findMapsFiler: function(filter) {
+		return this.data.maps.filter(filter);
+	}
+
 	findProject: function() {
 	    return this.data.Project;
 	}
@@ -150,6 +165,21 @@ Class.register('org.korsakow.domain.Dao', {
         }.bind(this));
     },
     findSnus: function() { return this.findSnusFilter(function() { return true; }); },
+
+    /* MAPPING PLUGIN */
+    findMaps: function(filter) {
+    	return this.finder.findMapsFilter(filter).map(function(d) {
+    		if (this.idmap[d.id])
+    			return this.idmap[d.id];
+
+    		var mapper = this.getMapper('Map');
+    		var obj = mapper.map(d);
+
+    		this.idmap[obj.id] = obj;
+    		return obj;
+    	}.bind(this));
+    }
+
     findProject: function() {
         var d = this.finder.findProject();
         var mapper = this.getMapper('Project');
@@ -157,13 +187,16 @@ Class.register('org.korsakow.domain.Dao', {
         this.idmap[obj.id] = obj;
         return obj;
     },
-	mapKeywords: function(data) {
+
+    //Used to be "mapKeywords", but this has use outside of just keywords (LOCs for instance).  Actually works with most things. --Phoenix 09/18/2014
+	mapGeneric: function(data) {
 	    return data.map(function(datum) {
 	        var mapper = this.getMapper(datum.className);
 	        var obj = mapper.map(datum);
 	        return obj;
 	    }.bind(this));
 	},
+
 	map: function(datum) {
 	    var id = datum.id;
         if (this.idmap[id])
@@ -337,7 +370,7 @@ Class.register('org.korsakow.domain.SnuInputMapper', org.korsakow.domain.InputMa
 	map: function(data) {
 		var id = this.parseInt(data, "id");
 		var name = this.parseString(data, "name");
-		var keywords = this.dao.mapKeywords(data.keywords);
+		var keywords = this.dao.mapGeneric(data.keywords);
 		var mainMedia = this.dao.findMediaById(this.parseInt(data, "mainMediaId"));
         var previewImage = (function() {
             if (org.korsakow.isValue(data["previewImageId"])) {
@@ -759,7 +792,7 @@ Class.register('org.korsakow.domain.KeywordLookupInputMapper', org.korsakow.doma
 	map: function(data) {
 		var type = this.parseString(data, "type");
 		var id = this.parseInt(data, "id");
-		var keywords = this.dao.mapKeywords(data.keywords);
+		var keywords = this.dao.mapGeneric(data.keywords);
 		var rule = new org.korsakow.domain.rule.KeywordLookup(id, keywords, type);
 		return rule;
 	}
@@ -771,7 +804,7 @@ Class.register('org.korsakow.domain.ExcludeKeywordsInputMapper', org.korsakow.do
 	map: function(data) {
 		var type = this.parseString(data, "type");
 		var id = this.parseInt(data, "id");
-		var keywords = this.dao.mapKeywords(data.keywords);
+		var keywords = this.dao.mapGeneric(data.keywords);
 		var rule = new org.korsakow.domain.rule.ExcludeKeywords(id, keywords, type);
 		return rule;
 	}

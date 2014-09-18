@@ -1,6 +1,6 @@
 NS('org.korsakow.mappingplugin.domain');
 
-org.korsakow.mappingplugin.domain.LOCInputMapper = Class.register('org.korsakow.mappingplugin.domain.LOCInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.mappingplugin.domain.LOCInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -19,7 +19,7 @@ org.korsakow.mappingplugin.domain.LOCInputMapper = Class.register('org.korsakow.
 
 });
 
-org.korsakow.mappingplugin.domain.MapInputMapper = Class.register('org.korsakow.mappingplugin.domain.MapInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.mappingplugin.domain.MapInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},
@@ -42,14 +42,14 @@ org.korsakow.mappingplugin.domain.MapInputMapper = Class.register('org.korsakow.
 			mapRep = new org.korsakow.mappingplugin.domain.GoogleMapRep(mapRepURL);
 		}
 
-		var keywords = this.dao.find({parent: id, path: 'keywords/Keyword'});
-		var locs = this.dao.find({parent: id, path: 'locs/LOC'});
+		var keywords = this.dao.mapGeneric(data.keywords);
+		var locs = this.dao.mapGeneric(data.locs);
 
 		return new org.korsakow.mappingplugin.domain.Map(id, name, mapRep, keywords, locs);
 	}
 });
 
-org.korsakow.mappingplugin.domain.MainMapInputMapper = Class.register('org.korsakow.mappingplugin.domain.MainMapInputMapper', org.korsakow.domain.InputMapper, {
+Class.register('org.korsakow.mappingplugin.domain.MainMapInputMapper', org.korsakow.domain.InputMapper, {
 	initialize: function($super, dao) {
 		$super(dao);
 	},

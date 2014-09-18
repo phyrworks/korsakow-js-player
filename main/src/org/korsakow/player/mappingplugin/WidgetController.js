@@ -1,6 +1,6 @@
 NS('org.korsakow.mappingplugin.controller.widget');
 
-org.korsakow.mappingplugin.controller.widget.MainMap = Class.register('org.korsakow.mappingplugin.controller.widget.MainMap',
+Class.register('org.korsakow.mappingplugin.controller.widget.MainMap',
 org.korsakow.controller.AbstractWidgetController, {
     initialize: function($super, model) {
         $super(model);

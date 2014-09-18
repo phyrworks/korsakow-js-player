@@ -1,7 +1,7 @@
 NS('org.korsakow.mappingplugin.domain');
 NS('org.korsakow.domain');
 
-org.korsakow.mappingplugin.domain.LOC = Class.register('org.korsakow.mappingplugin.domain.LOC', org.korsakow.Object, {
+Class.register('org.korsakow.mappingplugin.domain.LOC', org.korsakow.Object, {
     initialize: function($super, kind, x, y, value) {
         $super(null);
         this.x = x;

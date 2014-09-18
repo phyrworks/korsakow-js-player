@@ -167,7 +167,27 @@ Class.register('org.korsakow.domain.rule.Search', org.korsakow.domain.Rule, {
 
 		return searchResults;
 	},
-	processSearchResults: function(env, searchResults) {
+	processSearchResults: function(env, searchResults, map) {
+		var mapWidget = env.getMainMapWidget();
+
+		if (mapWidget != null) {
+			mapWidget.setMap(env, map.map);
+
+			env.currentMap = map.map;
+
+			//display the snu previews that are associated with every map loc.
+
+			//center the map on the currently selected loc (map.loc)
+
+			//remove any snus from the searchResults that arrived here via a loc (this keeps them from displaying when there is a map present)
+			for (var i = searchResults.results.length; i--;) {
+				if (searchResults.results[i].keywords[0].isLOC()) {
+					searchResults.splice(i, 1);
+				}
+			}
+
+		}
+
 		var previews = env.getWidgetsOfType('org.korsakow.widget.SnuAutoLink');
 
 		previews = previews.filter(function(p) {
