@@ -32,11 +32,11 @@ module.exports = function(grunt) {
                       'main/src/org/korsakow/player/Environment.js',
                       'main/src/org/korsakow/player/Main.js'],
         		      //'main/src/org/**/*.js'],
-        		dest: 'dist/player/data/lib/korsakow_player.js'
+        		dest: 'dist/player/data/js/korsakow_player.js'
         	},
         	tests: {
         		src: ['tests-unit/src/**/*.js'],
-        		dest: 'dist/tests-unit/lib/korsakow-tests-unit.js'
+        		dest: 'dist/tests-unit/js/korsakow-tests-unit.js'
         	}
         },
         copy: {
