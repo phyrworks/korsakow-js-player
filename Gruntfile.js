@@ -7,7 +7,15 @@ module.exports = function(grunt) {
             dist: ['dist']
         },
         concat: {
-        	player: {
+        	css: {
+        		src: [
+        			'main/src/css/base.css',
+        			'main/src/css/mappingplugin.css',
+        			'main/src/css/mobile.css'
+        		],
+        		dest: 'dist/player/data/css/base.css'
+        	},
+        	player: {        			
         		src: [
         		      // TODO: review where order of concat matters
         		      'main/src/org/korsakow/player/Polyfill.js',
@@ -49,7 +57,12 @@ module.exports = function(grunt) {
                 }, {
                     expand: true,
                     cwd: 'main/src',
-                    src: 'css/*',
+                    src: 'css/generated.css',
+                    dest: 'dist/player/data/'
+                }, {
+                    expand: true,
+                    cwd: 'main/src',
+                    src: 'css/debug.css',
                     dest: 'dist/player/data/'
                 }, {
                     expand: true,

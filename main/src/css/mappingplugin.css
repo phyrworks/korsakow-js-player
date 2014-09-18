@@ -1,3 +1,5 @@
+
+/* MAPPING PLUGIN BEGIN*/
 .MainMap
 	{
 	border:2px lightGray solid;
@@ -33,3 +35,5 @@
 	top: 0;
 	left: 0;
 	}
+
+/* MAPPING PLUGIN END */
