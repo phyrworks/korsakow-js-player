@@ -75,9 +75,9 @@ Class.register('org.korsakow.domain.Finder', {
 	},
 
 	/* MAPPING PLUGIN */
-	findMapsFiler: function(filter) {
+	findMapsFilter: function(filter) {
 		return this.data.maps.filter(filter);
-	}
+	},
 
 	findProject: function() {
 	    return this.data.Project;
@@ -167,7 +167,7 @@ Class.register('org.korsakow.domain.Dao', {
     findSnus: function() { return this.findSnusFilter(function() { return true; }); },
 
     /* MAPPING PLUGIN */
-    findMaps: function(filter) {
+    findMapsFilter: function(filter) {
     	return this.finder.findMapsFilter(filter).map(function(d) {
     		if (this.idmap[d.id])
     			return this.idmap[d.id];
@@ -178,7 +178,10 @@ Class.register('org.korsakow.domain.Dao', {
     		this.idmap[obj.id] = obj;
     		return obj;
     	}.bind(this));
-    }
+    },
+
+    /* MAPPING PLUGIN */
+    findMaps: function() { return this.findMapsFilter(function() { return true; }); },
 
     findProject: function() {
         var d = this.finder.findProject();
