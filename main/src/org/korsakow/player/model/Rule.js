@@ -46,11 +46,15 @@ Class.register('org.korsakow.domain.rule.KeywordLookup', org.korsakow.domain.Rul
 				var index = searchResults.indexOfSnu(snu);
 
 				if ( index == -1 ) {
-					result = new org.korsakow.SearchResult(snu, 0);
+					result = new org.korsakow.SearchResult(snu, 0, keyword);
 					searchResults.results.push(result);
-				} else
+				} else {
 					result = searchResults.results[index];
+					result.adKeyword(keyword);
+				}
 				result.score += env.getDefaultSearchResultIncrement() * snu.rating;
+
+				searchResults.addKeyword(keyword);
 			}
 		});
 	}
@@ -68,6 +72,9 @@ Class.register('org.korsakow.domain.rule.ExcludeKeywords', org.korsakow.domain.R
 			jQuery.each(snusToExclude, function(j, snu) {
 				searchResults.results.splice( searchResults.indexOfSnu(snu), 1 );
 			});
+
+			/* MAPPING PLUGIN */
+			searchResults.excludeKeyword(keyword);
 		});
 	}
 });
@@ -117,10 +124,10 @@ Class.register('org.korsakow.domain.rule.Search', org.korsakow.domain.Rule, {
 				//this is a loc, so this is the map we will choose
 				var locName = keyword.LOCValue();
 
-				var newMap = env.getDao().find({type: "Map", loc: locName});
+				var maps = env.getDao().findMapsWithLOC(locName);
 
-				if (newMap.length > 0)
-					return { map: newMap[0], loc: keyword.LOCValue() };
+				if (maps.length > 0)
+					return { map: maps[0], loc: keyword.LOCValue() };
 			}
 		}
 
@@ -165,6 +172,13 @@ Class.register('org.korsakow.domain.rule.Search', org.korsakow.domain.Rule, {
 			});
 		});
 
+		for (var i = searchResults.results.length; i--;) {
+			org.korsakow.log.debug("SearchResults : " + searchResults.results[i]);
+
+			org.korsakow.log.debug("SearchResults : " + searchResults.results[i].keywords);
+		}
+
+
 		return searchResults;
 	},
 	processSearchResults: function(env, searchResults, map) {
@@ -181,6 +195,10 @@ Class.register('org.korsakow.domain.rule.Search', org.korsakow.domain.Rule, {
 
 			//remove any snus from the searchResults that arrived here via a loc (this keeps them from displaying when there is a map present)
 			for (var i = searchResults.results.length; i--;) {
+				org.korsakow.log.debug(searchResults.results[i]);
+
+				org.korsakow.log.debug(searchResults.results[i].keywords);
+
 				if (searchResults.results[i].keywords[0].isLOC()) {
 					searchResults.splice(i, 1);
 				}

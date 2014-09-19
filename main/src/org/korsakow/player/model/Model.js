@@ -192,21 +192,38 @@ Class.register('org.korsakow.SearchResults', {
 		this.results = [];
 		this.keywords = [];
 	},
+
+	/* MAPPING PLUGIN */
 	addKeyword: function(keyword) {
-		if (keyword == null || keyword.length == 0)
+		if (keyword == null || keyword.value == null || keyword.value.length == 0)
 			return;
 
 		for (var i = 0; i < this.keywords.length; ++i) {
 			if (this.keywords[i].keyword == keyword) {
-				this.keywords[i].score += 1;
+				this.keywords[i].score += keyword.weight;
 				return this.keywords[i].score;
 			}
 		}
 
 		//not in the list above, add it
-		this.keywords.push( {"keyword": keyword, "score": 1 });
+		this.keywords.push( {"keyword": keyword, "score": keyword.weight });
 
 	},
+
+	/* MAPPING PLUGIN */
+	excludeKeyword: function(keyword) {
+		if (keyword == null || keyword.value == null || keyword.value.length == 0)
+			return;
+
+		for (var i = 0; i < this.keywords.length; ++i) {
+			if (this.keywords[i].keyword.value == keyword.value) {
+				this.keywords.splice(i, 1);
+
+				break;
+			}
+		};
+	},
+
 	indexOfSnu: function(snu) {
 		for (var i = 0; i < this.results.length; ++i)
 			if (this.results[i].snu.id == snu.id)
@@ -255,25 +272,40 @@ org.korsakow.SearchResult = Class.register('org.korsakow.SearchResult', {
 		/* MAPPING PLUGIN */
 		//The Mapping plugin needs to know which keywords are associated with a SNU to work properly
 		this.keywords = [];
-		this.keywords.push({ "keyword": keyword, "score": 1});
+		this.keywords.push({ "keyword": keyword, "score": keyword.weight});
 	},
 	addScore: function(value) {
 		this.score += value * this.snu.rating;
 	},
 	/* MAPPING PLUGIN */
 	addKeyword: function(keyword) {
-		if (keyword == null || keyword.length == 0)
+		if (keyword == null || keyword.value == null || keyword.value.length == 0)
 			return;
 
 		for (var i = 0; i < this.keywords.length; ++i) {
-			if (this.keywords[i].keyword == keyword) {
-				this.keywords[i].score += 1;
+			if (this.keywords[i].keyword.value == keyword.value) {
+				this.keywords[i].score += keyword.weight;
 				return this.keywords[i].score;
 			}
 		}
 
-		this.keywords.push({"keyword": keyword, "score": 1});
+		this.keywords.push({"keyword": keyword, "score": keyword.weight});
 	},
+
+	/* MAPPING PLUGIN */
+	excludeKeyword: function(keyword) {
+		if (keyword == null || keyword.value == null || keyword.value.length == 0)
+			return;
+
+		for (var i = 0; i < this.keywords.length; ++i) {
+			if (this.keywords[i].keyword.value == keyword.value) {
+				this.keywords.splice(i, 1);
+
+				break;
+			}
+		};
+	},
+
 	toString: function() {
 		return "[org.korsakow.SearchResult; snu="+this.snu.id+"("+this.snu.name+")]";
 	}

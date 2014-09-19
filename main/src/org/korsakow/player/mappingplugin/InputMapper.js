@@ -5,14 +5,10 @@ Class.register('org.korsakow.mappingplugin.domain.LOCInputMapper', org.korsakow.
 		$super(dao);
 	},
 	map: function(data) {
-		for (var i = 0; i < data.children().length; ++i) {
-			console.log(data.children()[i].localName + " = " + $(data.children()[i]).text());
-		}
-
-		var kind = PU.parseString(data.children("kind"), "kind");
-		var x = PU.parseFloat(data.children("x"), "x");
-		var y = PU.parseFloat(data.children("y"), "y");
-		var keyword = PU.parseString(data.children("keyword"), "keyword");
+		var kind = this.parseString(data, "kind");
+		var x = this.parseFloat(data, "x");
+		var y = this.parseFloat(data, "y");
+		var keyword = this.parseString(data, "keyword");
 
 		return new org.korsakow.mappingplugin.domain.LOC(kind, x, y, keyword);
 	}

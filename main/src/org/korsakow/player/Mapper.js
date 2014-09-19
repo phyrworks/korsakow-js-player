@@ -39,8 +39,8 @@ Class.register('org.korsakow.domain.Finder', {
     	                    thisFinder.snuKeywordIndex[value].push(d);
     	                });
 	                } else if (type === 'maps') { /* MAPPING PLUGIN */
-	                	d.locs && d.locs.forEach(function(k) {
-	                		var value = k.value;
+	                	d.locs && d.locs.forEach(function(loc) {
+	                		var value = loc.keyword;
 	                		thisFinder.mapLocIndex[value] = thisFinder.mapLocIndex[value] || [];
 	                		thisFinder.mapLocIndex[value].push(d);
 	                	})
@@ -81,9 +81,14 @@ Class.register('org.korsakow.domain.Finder', {
 
 	findProject: function() {
 	    return this.data.Project;
-	}
+	},
 	/* MAPPING PLUGIN */
-	findMapWithLOC: function(loc) {
+	findMapsWithLOC: function(locValue) {
+		if (this.mapLocIndex[locValue] == null)
+			return [];
+		else
+			return this.mapLocIndex[locValue];
+		// return this.mapLocIndex[locValue] != null ? this.mapLocIndex[locValue] : [] ;
 		/*return this.data.maps.filter(function() {
 				var x = $(this).children('locs').children('LOC');
 				for (var i = 0; i < x.length; ++i)
@@ -176,6 +181,21 @@ Class.register('org.korsakow.domain.Dao', {
     		var obj = mapper.map(d);
 
     		this.idmap[obj.id] = obj;
+    		return obj;
+    	}.bind(this));
+    },
+
+    /* MAPPING PLUGIN */
+    findMapsWithLOC: function(locValue) {
+    	var maps = this.finder.findMapsWithLOC(locValue);
+    	return maps.map(function(d) {
+    		if (this.idmap[d.id])
+    			return this.idmap[d.id];
+
+    		var mapper = this.getMapper('Map');
+    		var obj = mapper.map(d);
+    		this.idmap[obj.id] = obj;
+
     		return obj;
     	}.bind(this));
     },
@@ -300,6 +320,52 @@ Class.register('org.korsakow.domain.InputMapper', {
 	},
 	parseColor: function(data, prop) {
 		return PU.parseColor(data[prop], this.getClass().qualifiedName + "." + prop + ':' + data['id']);
+	},
+
+	parseIntNoThrow: function(data, prop, defaultValue) {
+		try {
+			return PU.parseInt(data[prop], this.getClass().qualifiedName + "." + prop + ':' + data['id']);
+		} catch (err) {
+			org.korsakow.log.info(err);
+
+			return defaultValue;
+		}
+	},
+	parseFloatNoThrow: function(data, prop, defaultValue) {
+		try {
+			return PU.parseFloat(data[prop], this.getClass().qualifiedName + "." + prop + ':' + data['id']);
+		} catch (err) {
+			org.korsakow.log.info(err);
+
+			return defaultValue;
+		}
+	},
+	parseStringNoThrow: function(data, prop, defaultValue) {
+		try {
+			return PU.parseString(data[prop], this.getClass().qualifiedName + "." + prop + ':' + data['id']);
+		} catch (err) {
+			org.korsakow.log.info(err);
+
+			return defaultValue;
+		}
+	},
+	parseBooleanNoThrow: function(data, prop, defaultValue) {
+		try {
+			return PU.parseBoolean(data[prop], this.getClass().qualifiedName + "." + prop + ':' + data['id']);
+		} catch (err) {
+			org.korsakow.log.info(err);
+
+			return defaultValue;
+		}
+	},
+	parseColorNoThrow: function(data, prop, defaultValue) {
+		try {
+			return PU.parseColor(data[prop], this.getClass().qualifiedName + "." + prop + ':' + data['id']);
+		} catch (err) {
+			org.korsakow.log.info(err);
+
+			return defaultValue;
+		}
 	}
 });
 
@@ -492,12 +558,12 @@ Class.register('org.korsakow.domain.PreviewInputMapper', org.korsakow.domain.Inp
 		var height = this.parseInt(data, "height");
 		var index = this.parseInt(data, "index");
 		
-		var fontColor = this.parseString(data, "fontColor");
-		var fontFamily = this.parseString(data, "fontFamily");
-		var fontSize = this.parseInt(data, "fontSize");
-		var fontStyle = this.parseString(data, "fontStyle");
-		var fontWeight = this.parseString(data, "fontWeight");
-		var textDecoration = this.parseString(data, "textDecoration");
+		var fontColor = this.parseStringNoThrow(data, "fontColor", "black");
+		var fontFamily = this.parseStringNoThrow(data, "fontFamily", "Arial");
+		var fontSize = this.parseIntNoThrow(data, "fontSize", "12");
+		var fontStyle = this.parseStringNoThrow(data, "fontStyle", "normal");
+		var fontWeight = this.parseStringNoThrow(data, "fontWeight", "normal");
+		var textDecoration = this.parseString(data, "textDecoration", "none");
 		
 		var horizontalTextAlignment = this.parseString(data, "horizontalTextAlignment");
 		var verticalTextAlignment = this.parseString(data, "verticalTextAlignment");
