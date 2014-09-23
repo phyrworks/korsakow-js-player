@@ -41,7 +41,7 @@ Class.register('org.korsakow.mappingplugin.domain.MapInputMapper', org.korsakow.
 		var keywords = this.dao.mapGeneric(data.keywords);
 		var locs = this.dao.mapGeneric(data.locs);
 
-		return new org.korsakow.mappingplugin.domain.Map(id, name, mapRep, keywords, locs);
+		return new org.korsakow.mappingplugin.domain.Map(id, name, mapRep, locs, keywords);
 	}
 });
 

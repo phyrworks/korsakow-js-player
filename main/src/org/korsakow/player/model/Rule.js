@@ -50,7 +50,7 @@ Class.register('org.korsakow.domain.rule.KeywordLookup', org.korsakow.domain.Rul
 					searchResults.results.push(result);
 				} else {
 					result = searchResults.results[index];
-					result.adKeyword(keyword);
+					result.addKeyword(keyword);
 				}
 				result.score += env.getDefaultSearchResultIncrement() * snu.rating;
 
@@ -79,6 +79,57 @@ Class.register('org.korsakow.domain.rule.ExcludeKeywords', org.korsakow.domain.R
 	}
 });
 
+/* MAPPING PLUGIN */
+/* Finds SNUs associated with LOCS in a map. SNU's scores increases for
+ * each LOC/keyword that matches.
+ */
+Class.register('org.korsakow.domain.rule.LOCLookup', org.korsakow.domain.Rule, {
+	initialize: function($super, id, locs, type) {
+		$super(id, locs, type);
+		// TODO: assert type == org.korsakow.rule.LOCLookup
+	},
+	/*
+	 * @param searchResults {org.korsakow.SearchResults}
+	 */
+	execute: function(env, searchResults) {
+		//NOTE: in this case this.keywords is a list of LOCS, not keywords
+		org.korsakow.log.debug('KeywordLookup: ' + this.keywords);
+		
+		// for each time a snu appears in a list, increase its searchResults
+		// (thus, snus searchResults proportionally to the number of LOC/keywords
+		// they match)
+		// NOTE: The way LOCs are dealt with is different in a Map than in a Snu.
+		// 		 There can only be one LOC with a given keyword in each Map, so
+		//		 we ultimately want to return a mapping of LOCs to their associated
+		//		 Snus.
+		var currentSnu = env.getCurrentSnu();
+
+		$.each(this.keywords, function(i, loc) {
+			var dao = env.getDao();
+			var snus = dao.findSnusWithKeyword(loc.keywordValue());
+
+			for (var j = 0; j < snus.length; ++j) {
+				var snu = snus[j];
+				if (snu == currentSnu || snu.lives === 0)
+					continue;
+				var result;
+				var index = searchResults.indexOfSnu(snu);
+
+				if ( index == -1 ) {
+					result = new org.korsakow.SearchResult(snu, 0, loc);
+					searchResults.results.push(result);
+				} else {
+					result = searchResults.results[index];
+					result.addKeyword(loc);
+				}
+				result.score += env.getDefaultSearchResultIncrement() * snu.rating;
+
+				searchResults.addKeyword(loc);
+			}
+		});
+	}
+});
+
 /* Performs a search by running a series of subrules. Results are displayed
  * in Preview widgets.
  */
@@ -99,7 +150,7 @@ Class.register('org.korsakow.domain.rule.Search', org.korsakow.domain.Rule, {
 	findMap: function(env, searchResults) {
 		if (env.currentMap != null) {
 			//There is a current map. The rule is thus: If there is a current map, then preference
-			//this over other maps.  So we search the existence of the current map that owns one of
+			//this over other maps.  So we search the current map to see if it owns one of
 			//the locs.  If none of the locs are in the current map, then we are free to choose 
 			//the top rated map.
 			for (var i = 0; i < searchResults.keywords.length; ++i) {
@@ -184,23 +235,21 @@ Class.register('org.korsakow.domain.rule.Search', org.korsakow.domain.Rule, {
 	processSearchResults: function(env, searchResults, map) {
 		var mapWidget = env.getMainMapWidget();
 
-		if (mapWidget != null) {
-			mapWidget.setMap(env, map.map);
+		if (mapWidget != null && map.map != null) {
+
+			mapWidget.setMap(env, map.map, map.loc);
 
 			env.currentMap = map.map;
 
-			//display the snu previews that are associated with every map loc.
-
 			//center the map on the currently selected loc (map.loc)
 
-			//remove any snus from the searchResults that arrived here via a loc (this keeps them from displaying when there is a map present)
+			//remove any snus from the searchResults that arrived here via a loc (this keeps them from displaying when there is a map present).  Traversing from the back to front, so that we can erase results as we go.
 			for (var i = searchResults.results.length; i--;) {
-				org.korsakow.log.debug(searchResults.results[i]);
 
-				org.korsakow.log.debug(searchResults.results[i].keywords);
+				var keyword = searchResults.results[i].keywords[0].keyword;
 
-				if (searchResults.results[i].keywords[0].isLOC()) {
-					searchResults.splice(i, 1);
+				if (keyword.isLOC()) {
+					searchResults.results.splice(i, 1);
 				}
 			}
 

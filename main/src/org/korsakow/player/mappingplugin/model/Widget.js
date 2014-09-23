@@ -5,5 +5,4 @@ Class.register('org.korsakow.mappingplugin.domain.widget.MainMap', org.korsakow.
         $super(id, keywords, type, x, y, width, height);
         this.mapMoveable = mapMoveable;
     }
-    
 });

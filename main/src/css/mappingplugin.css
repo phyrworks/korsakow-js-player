@@ -20,7 +20,7 @@
 	}
 */
 
-.map
+.MainMap .map
 	{
 	/*margin: 44px 148px 0px 22px;*/
 	-webkit-user-select: none;
@@ -35,5 +35,36 @@
 	top: 0;
 	left: 0;
 	}
+
+.MainMap .mapPreview
+	{
+	border: 1px white solid;
+	position: absolute;
+	}
+
+.MainMap .topLeft
+	{
+	border-radius: 0 12px 12px 12px;
+	background-color: rgba(0, 0, 0, 0.5);
+	}
+
+.MainMap .bottomLeft
+	{
+	border-radius: 12px 12px 12px 0px;
+	background-color: rgba(0, 0, 0, 0.5);
+	}
+
+.MainMap .topRight
+	{
+	border-radius: 12px 0px 12px 12px;
+	background-color: rgba(0, 0, 0, 0.5);
+	}
+
+.MainMap .bottomRight
+	{
+	border-radius: 12px 12px 0px 12px;
+	background-color: rgba(0, 0, 0, 0.5);
+	}
+
 
 /* MAPPING PLUGIN END */

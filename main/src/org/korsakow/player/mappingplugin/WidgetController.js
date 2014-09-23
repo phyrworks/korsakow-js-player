@@ -5,6 +5,9 @@ org.korsakow.controller.AbstractWidgetController, {
     initialize: function($super, model) {
         $super(model);
     },
+    destroy: function($super) {
+        $super();
+    },
     setup: function($super, env) {
         $super(env);
         this.element.addClass("MainMap");
@@ -19,15 +22,23 @@ org.korsakow.controller.AbstractWidgetController, {
     	this.element.empty();
     },
 
-    setMap:function(env, map) {
+    setMap:function(env, map, loc) {
     	this.clear();
 
     	if (map == null)
     		return;
 
-    	this.view.setup(env, map);
+        //get the snus to be shown for this map
+        var snuToLoc = map.lookupSnus(env, loc);
+
+        //display the snu previews that are associated with every map loc
+        org.korsakow.log.info(snuToLoc);
+
+    	this.view.setup(env, map, snuToLoc, this.model.mapMoveable);
+
     	this.element.append(this.view.element);
     }
+
 
 });
 
