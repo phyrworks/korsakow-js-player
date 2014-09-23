@@ -460,7 +460,7 @@ Class.register('org.korsakow.domain.SnuInputMapper', org.korsakow.domain.InputMa
 		var events = this.dao.mapAll(data.events);
 		var lives = (function(){
 		    if (org.korsakow.isValue(data["lives"]))
-                return PU.parseInt(temp, "Snu.lives");
+                return PU.parseInt(data, "lives");
 		    else
 		        return NaN;
 		}).apply(this);
