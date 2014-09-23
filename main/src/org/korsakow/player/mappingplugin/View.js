@@ -33,7 +33,7 @@ Class.register('org.korsakow.mappingplugin.ui.MapUI', {
 			//Nothing for now
 			this.element = jQuery("<div />").addClass("map").css({"width": "100%", "height" : "100%"});
 			this.mapSize = { width: this.element.width(), height: this.element.height() };
-		} else {
+		} else { //(this.model.mapRep.kind == 'image')
 			//Assume the contained url is an image
 			var self = this;
 
@@ -46,7 +46,7 @@ Class.register('org.korsakow.mappingplugin.ui.MapUI', {
 						 		//jQuery(this).appendTo("self.wrapper");
 						 		self.mapSize = { width: this.width != 0 ? this.width : 1, height: this.height != 0 ? this.height : 1};
 
-						 		self.setupMapPreviews(env, snuToLocMap);
+						 		self.setupImageMapPreviews(env, snuToLocMap);
 
 						        if (snuToLocMap.length > 0) {
 						            //center the map on the first loc in the list
@@ -61,7 +61,7 @@ Class.register('org.korsakow.mappingplugin.ui.MapUI', {
 		}
 	},
 
-    setupMapPreviews: function(env, snuToLoc) {
+    setupImageMapPreviews: function(env, snuToLoc) {
     	//remove any existing previews
     	this.element.remove(".mapPreview");
 
@@ -78,30 +78,30 @@ Class.register('org.korsakow.mappingplugin.ui.MapUI', {
 		        	boxPosition = "topLeft";
 		        } else { //actualLOC.y + self.previewSize.height <= self.mapSize.height
 		        	//the widget falls off the bottom of the map, show from bottom-left
-		        	actualLOC.y -= self.previewSize.height;
+		        	actualLOC.y -= self.previewSize.height + 2;
 		        	boxPosition = "bottomLeft";
 		        }
 
         	} else { //actualLOC.x + self.previewSize.width > self.previewSize.width
         		//the widget goes off the right side, adjust to the left until it fits
-        		actualLOC.x -= self.previewSize.width;
+        		actualLOC.x -= self.previewSize.width + 2;
         		if (actualLOC.y + self.previewSize.height <= self.mapSize.height) {
         			//the widget fits within the map vertically, show from top-right
 		        	boxPosition = "topRight";
 		        } else { //actualLOC.y + self.previewSize.height <= self.mapSize.height
 		        	//the widget falls off the bottom of the map, show from bottom-right
-		        	actualLOC.y -= self.previewSize.height;
+		        	actualLOC.y -= self.previewSize.height + 2;
 		        	boxPosition = "bottomRight";
 		        }
         	}
 
-        	self.addPreview(env, value.snu, actualLOC, self.previewSize, boxPosition);
+        	self.addImageMapPreview(env, value.snu, actualLOC, self.previewSize, boxPosition);
 
         	// self.element.append(widget.element);
         });
     },
 
-    addPreview: function(env, snu, coord, size, boxPos) {
+    addImageMapPreview: function(env, snu, coord, size, boxPos) {
     	//Uncomment below for a test widget (for showing placement)
     	// var widget = jQuery("<div />").addClass("mapPreview").addClass(boxPos).css({"width": size.width  + "px", "height": size.height + "px", "top": coord.x + "px", "left": coord.y + "px"});
     	var widgetModel = new org.korsakow.domain.widget.Preview(0 /*id*/, [] /*keywords*/, "org.korsakow.widget.SnuAutoLink" /*type*/, coord.x /*x*/, coord.y /*y*/, size.width /*width*/, size.height /*height*/, 0 /*index*/, "black" /*font color*/, "Arial" /*font family*/, "12" /*font size*/, "normal" /*font style*/, "normal" /* font weight*/, "none" /*text decoration*/, "center" /*horizontal text alignment*/, "top" /*vertical text alignment*/, "mouseover" /*preview text mode*/, "none" /*preview text effct*/);
@@ -119,18 +119,18 @@ Class.register('org.korsakow.mappingplugin.ui.MapUI', {
 
     centerMapToPoint: function(x, y, mapMoveable) {
         /*
-        point is a normalized x, y coordinate.  So (0,0) is the top left of the map, (1,0) is the top right, (0,1) is the bottom left, (1, 1) is the bottom right, and (0.5, 0.5) is the middle, middle of the map.  If either value is larger than 1, then an attempt is made to normalize the coordinate.  Values given that are larger than the map size will be set to the value modulo [width | height].  Negative values will be set to their offset from the right or bottom, instead of the top or left.
+        point is a normalized x, y coordinate.  So (0,0) is the top left of the map, (1,0) is the top right, (0,1) is the bottom left, (1, 1) is the bottom right, and (0.5, 0.5) is the middle, middle of the map.  Negative values will be set to their offset from the right or bottom, instead of the top or left.
         */
 
 
         //Get us in the range for the map
-        if (Math.abs(x) > 1 || Math.abs(y) > 1) {
-            x = x / this.mapSize.width;
-            y = y / this.mapSize.height;
+        // if (Math.abs(x) > 1 || Math.abs(y) > 1) {
+        //     x = x / this.mapSize.width;
+        //     y = y / this.mapSize.height;
 
-            x = x.mod(1);
-            y = y.mod(1);
-        }
+        //     x = x.mod(1);
+        //     y = y.mod(1);
+        // }
 
         if (x < 0) {
             //calculate from right
@@ -143,7 +143,7 @@ Class.register('org.korsakow.mappingplugin.ui.MapUI', {
         }
 
         //we need the center point of the map to align with the center of element
-        if (mapMoveable) {
+        if ((this.model.mapRep.kind != 'google') || mapMoveable) {
             //when the map is moveable, we attempt to set the scroll position to as close to center as possible.
             var xdiff = (this.element.parent().width() / 2.) - (x * this.mapSize.width);
             var ydiff = (this.element.parent().height() / 2.) - (y * this.mapSize.height);
