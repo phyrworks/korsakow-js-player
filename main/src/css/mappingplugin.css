@@ -66,5 +66,17 @@
 	background-color: rgba(0, 0, 0, 0.5);
 	}
 
+.MainMap .locPointer
+	{
+    position: absolute;
+    margin: 0;
+    padding: 0;
+	min-width: 14px;
+	min-height: 14px;
+	background-color: darkGray;
+	border: 1px white solid;
+	border-radius: 9px;
+	}
+
 
 /* MAPPING PLUGIN END */

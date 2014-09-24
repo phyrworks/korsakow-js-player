@@ -104,6 +104,7 @@ Class.register('org.korsakow.mappingplugin.ui.MapUI', {
     addImageMapPreview: function(env, snu, coord, size, boxPos) {
     	//Uncomment below for a test widget (for showing placement)
     	// var widget = jQuery("<div />").addClass("mapPreview").addClass(boxPos).css({"width": size.width  + "px", "height": size.height + "px", "top": coord.x + "px", "left": coord.y + "px"});
+
     	var widgetModel = new org.korsakow.domain.widget.Preview(0 /*id*/, [] /*keywords*/, "org.korsakow.widget.SnuAutoLink" /*type*/, coord.x /*x*/, coord.y /*y*/, size.width /*width*/, size.height /*height*/, 0 /*index*/, "black" /*font color*/, "Arial" /*font family*/, "12" /*font size*/, "normal" /*font style*/, "normal" /* font weight*/, "none" /*text decoration*/, "center" /*horizontal text alignment*/, "top" /*vertical text alignment*/, "mouseover" /*preview text mode*/, "none" /*preview text effct*/);
 
     	var widget = new org.korsakow.controller.PreviewWidgetController(widgetModel);
@@ -113,6 +114,11 @@ Class.register('org.korsakow.mappingplugin.ui.MapUI', {
     	this.element.append(widget.element);
 
     	widget.setSnu(snu);
+
+        //add a small circle around the point on the map
+        var locPointer = jQuery("<div />").addClass("locPointer").css({"left": coord.x - 6, "top": coord.y - 6});
+        this.element.append(locPointer);
+
 
     	return widget;
     },
