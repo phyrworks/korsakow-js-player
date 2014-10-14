@@ -28,10 +28,12 @@
 .MainMap .mapPreview
 	{
 	border: 1px white solid;
+	border-radius: 12px 12px 12px 12px;
+	background-color: rgba(0, 0, 0, 0.5);
 	position: absolute;
 	}
 
-.MainMap .topLeft
+/*.MainMap .topLeft
 	{
 	border-radius: 0 12px 12px 12px;
 	background-color: rgba(0, 0, 0, 0.5);
@@ -54,7 +56,7 @@
 	border-radius: 12px 12px 0px 12px;
 	background-color: rgba(0, 0, 0, 0.5);
 	}
-
+*/
 .MainMap .locPointer
 	{
     position: absolute;

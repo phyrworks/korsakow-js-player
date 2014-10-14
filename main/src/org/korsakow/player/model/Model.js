@@ -241,13 +241,15 @@ Class.register('org.korsakow.SearchResults', {
 	}
 });
 Class.register('org.korsakow.SearchResult', {
-	initialize: function(snu, score) {
+	initialize: function(snu, score, keyword) {
 		this.snu = snu;
 		this.score = score;
 		/* MAPPING PLUGIN */
 		//The Mapping plugin needs to know which keywords are associated with a SNU to work properly
 		this.keywords = [];
-		this.keywords.push({ "keyword": keyword, "score": keyword.weight});
+		if (keyword != null) {
+			this.keywords.push({ "keyword": keyword, "score": keyword.weight});
+		}
 	},
 	addScore: function(value) {
 		this.score += value * this.snu.rating;

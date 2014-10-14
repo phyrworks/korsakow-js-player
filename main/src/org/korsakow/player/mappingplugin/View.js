@@ -69,54 +69,48 @@ Class.register('org.korsakow.mappingplugin.ui.MapUI', {
 
         jQuery.each(snuToLoc, function(index, value) {
         	var actualLOC = { "x": value.loc.x * self.mapSize.width, "y": value.loc.y * self.mapSize.height };
-        	var boxPosition = "";
+        	var locPointerCenter = {};
         	var widget = null;
 
-        	if (actualLOC.x + self.previewSize.width <= self.mapSize.width) {
-        		if (actualLOC.y + self.previewSize.height <= self.mapSize.height) {
-        			//the widget fits within the map, show from top-left
-		        	boxPosition = "topLeft";
-		        } else { //actualLOC.y + self.previewSize.height <= self.mapSize.height
-		        	//the widget falls off the bottom of the map, show from bottom-left
-		        	actualLOC.y -= self.previewSize.height + 2;
-		        	boxPosition = "bottomLeft";
-		        }
 
-        	} else { //actualLOC.x + self.previewSize.width > self.previewSize.width
-        		//the widget goes off the right side, adjust to the left until it fits
-        		actualLOC.x -= self.previewSize.width + 2;
-        		if (actualLOC.y + self.previewSize.height <= self.mapSize.height) {
-        			//the widget fits within the map vertically, show from top-right
-		        	boxPosition = "topRight";
-		        } else { //actualLOC.y + self.previewSize.height <= self.mapSize.height
-		        	//the widget falls off the bottom of the map, show from bottom-right
-		        	actualLOC.y -= self.previewSize.height + 2;
-		        	boxPosition = "bottomRight";
-		        }
-        	}
+            //adjust the position of the box, and the location pointer
+            if (actualLOC.x + self.previewSize.width > self.mapSize.width) {
+                actualLOC.x -= self.previewSize.width + 6;
+                locPointerCenter.left = actualLOC.x + self.previewSize.width - 8;
+            } else {
+                locPointerCenter.left = actualLOC.x - 6;
+            }
 
-        	self.addImageMapPreview(env, value.snu, actualLOC, self.previewSize, boxPosition);
+            if (actualLOC.y + self.previewSize.height > self.mapSize.height) {
+                //the widget falls off the bottom of the map, show from bottom-left
+                actualLOC.y -= self.previewSize.height + 6;
+                locPointerCenter.top = actualLOC.y + self.previewSize.height - 8;
+            } else {
+                locPointerCenter.top = actualLOC.y - 6;
+            }
+
+        	self.addImageMapPreview(env, value.snu, actualLOC, self.previewSize, locPointerCenter);
 
         	// self.element.append(widget.element);
         });
     },
 
-    addImageMapPreview: function(env, snu, coord, size, boxPos) {
+    addImageMapPreview: function(env, snu, coord, size, locPointerCenter) {
     	//Uncomment below for a test widget (for showing placement)
-    	// var widget = jQuery("<div />").addClass("mapPreview").addClass(boxPos).css({"width": size.width  + "px", "height": size.height + "px", "top": coord.x + "px", "left": coord.y + "px"});
+    	// var widget = jQuery("<div />").addClass("mapPreview").css({"width": size.width  + "px", "height": size.height + "px", "top": coord.x + "px", "left": coord.y + "px"});
 
     	var widgetModel = new org.korsakow.domain.widget.Preview(0 /*id*/, [] /*keywords*/, "org.korsakow.widget.SnuAutoLink" /*type*/, coord.x /*x*/, coord.y /*y*/, size.width /*width*/, size.height /*height*/, 0 /*index*/, "black" /*font color*/, "Arial" /*font family*/, "12" /*font size*/, "normal" /*font style*/, "normal" /* font weight*/, "none" /*text decoration*/, "center" /*horizontal text alignment*/, "top" /*vertical text alignment*/, "mouseover" /*preview text mode*/, "none" /*preview text effct*/);
 
     	var widget = new org.korsakow.controller.PreviewWidgetController(widgetModel);
     	widget.setup(env);
-    	widget.element.addClass("mapPreview").addClass(boxPos).css({"top":coord.y, "left":coord.x, "width":size.width, "height":size.height});
+    	widget.element.addClass("mapPreview").css({"top":coord.y, "left":coord.x, "width":size.width, "height":size.height});
 
     	this.element.append(widget.element);
 
     	widget.setSnu(snu);
 
         //add a small circle around the point on the map
-        var locPointer = jQuery("<div />").addClass("locPointer").css({"left": coord.x - 6, "top": coord.y - 6});
+        var locPointer = jQuery("<div />").addClass("locPointer").css(locPointerCenter);
         this.element.append(locPointer);
 
 
