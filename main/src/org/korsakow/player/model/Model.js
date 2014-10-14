@@ -240,33 +240,8 @@ Class.register('org.korsakow.SearchResults', {
 		return "[org.korsakow.SearchResults]";
 	}
 });
-
-/* MAPPING PLUGIN */
-// org.korsakow.mappingplugin.SearchResults = Class.register('org.korsakow.mappingplugin.SearchResults', org.korsakow.SearchResults, {
-// 	initialize: function($super) {
-// 		$super();
-// 	}
-
-// 	indexOfMap: function(map) {
-// 		for (var i = 0; i < this.results.length; ++i)
-// 			if (this.results[i].map.id == map.id)
-// 				return i;
-// 		return -1;		
-// 	},
-// 	resultOfMap: function(map) {
-// 		for (var i = 0; i < this.results.length; ++i)
-// 			if (this.results[i].map.id == map.id)
-// 				return this.results[i];
-// 		return null;
-// 	},
-// 	toString: function() {
-// 		return "[org.korsakow.mappingplugin.SearchResults]";
-// 	}
-
-// });
-
-org.korsakow.SearchResult = Class.register('org.korsakow.SearchResult', {
-	initialize: function(snu, score, keyword) {
+Class.register('org.korsakow.SearchResult', {
+	initialize: function(snu, score) {
 		this.snu = snu;
 		this.score = score;
 		/* MAPPING PLUGIN */
