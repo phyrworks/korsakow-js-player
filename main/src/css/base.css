@@ -24,15 +24,22 @@ html, body {
 
 #continueScreen {
 	display: none;
-	background: black;
 	color: papayaWhip;
 	text-align: center;
 	box-sizing: border-box;
 	position: relative;
+	top: 35%;
+	width: 100%;
+	text-align: center;
 }
 
 #continueScreen .buttonContainer{
-	padding-top: 35%;
+	display:inline-block;
+	width:25em;
+	background-color:rgba(0, 0, 0, .65);
+	padding: 20px;
+	border-radius: 10px;
+	text-align: center;
 }
 
 #continueScreen .buttonContainer button {
@@ -40,6 +47,7 @@ html, body {
 	padding-right: 10px;
 	display: inline-block;
 }
+
 
 .SplashScreen {
 	cursor: pointer;

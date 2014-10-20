@@ -191,6 +191,9 @@ Class.register('org.korsakow.SearchResults', {
 	initialize: function() {
 		this.results = [];
 		this.keywords = [];
+		/* MAPPING PLUGIN */
+		//LOCs is a list of LOCs referenced by the current snu.  This is used for finding which map to use next.
+		this.LOCs = [];
 	},
 
 	/* MAPPING PLUGIN */
@@ -211,9 +214,31 @@ Class.register('org.korsakow.SearchResults', {
 	},
 
 	/* MAPPING PLUGIN */
+	addLOC: function(loc) {
+		if (loc == null || loc.value == null || loc.value.length == 0) {
+			return;
+		}
+
+		for (var i = 0; i < this.LOCs.length; ++i) {
+			if (this.LOCs[i].keyword.value == loc.value) {
+				this.LOCs[i].score += loc.weight;
+				return this.LOCs[i].score;
+			}
+		}
+
+		//not in the list above, add it
+		this.LOCs.push( {"keyword": loc, "score": loc.weight });
+
+	},
+
+	/* MAPPING PLUGIN */
 	excludeKeyword: function(keyword) {
 		if (keyword == null || keyword.value == null || keyword.value.length == 0)
 			return;
+
+		if (keyword.isLOC()) {
+			this.excludeLOC(keyword);
+		}
 
 		for (var i = 0; i < this.keywords.length; ++i) {
 			if (this.keywords[i].keyword.value == keyword.value) {
@@ -222,6 +247,73 @@ Class.register('org.korsakow.SearchResults', {
 				break;
 			}
 		};
+	},
+
+	/* MAPPING PLUGIN */
+	excludeLOC: function(loc) {
+		if (loc == null || loc.value == null || loc.value.length == 0)
+			return;
+
+		for (var i = 0; i < this.LOCs.length; ++i) {
+			if (this.LOCs[i].keyword.value == keyword.value) {
+				this.LOCs.splice(i, 1);
+
+				break;
+			}
+		};		
+	},
+
+	/* MAPPING PLUGIN */
+	removeLOCsFromSnus: function() {
+		//remove any snus from the searchResults that arrived here via a loc.  Traversing from the back to front, so that we can erase results as we go.
+		for (var i = this.results.length; i--;) {
+
+			var keywords = this.results[i].keywords; 
+			for (var j = keywords.length; j--;) {
+				if (keywords[j].keyword.isLOC()) {
+					keywords.splice(j, 1);
+				}
+			}
+
+			if (keywords.length == 0) {
+				this.results.splice(i, 1);
+			}
+		}
+	},
+
+	/* MAPPING PLUGIN */
+	removeLOCFromSnus: function(locKeyword) {
+		//Variation on the above that removes a single loc from all the Snus.  If a Snu has no more keywords after the removal of the LOC, then the snu is removed from the lists of results.
+
+		for (var i = this.results.length; i--;) {
+			var keywords = this.results[i].keywords;
+			for (var j = keywords.length; j--;) {
+				if (keywords[j].keyword == locKeyword.value) {
+					keywords.splice(j, 1);
+				}
+			}
+
+			if (keywords.length == 0) {
+				this.results.splce(i, 1);
+			}
+		}
+
+	},
+
+	/* MAPPING PLUGIN */
+	mergeLOCsWithKeywords: function() {
+		//Add any LOC that is not marked with removeAfterMap to the list of used keywords.  Any that are marked, are removed from their respective Snu, and if the snu has no more keywords, it is removed from the list of available Snus.
+		for (var loc in this.LOCs) {
+			if (loc.keyword.removeAfterMap) {
+				//in this case, we want to remove the keyword from the snu that it came from, and potentially remove the snu if there are no longer any non-LOC keywords associated with the snu.
+				this.removeLOCFromSnus(loc.keyword);
+
+			} else {
+				//Here, we just add the keyword back into the final search results
+				this.addKeyword(loc);
+			}
+		}
+
 	},
 
 	indexOfSnu: function(snu) {

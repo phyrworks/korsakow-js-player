@@ -34,14 +34,27 @@ Class.register('org.korsakow.domain.rule.KeywordLookup', org.korsakow.domain.Rul
 		// they match)
 		var currentSnu = env.getCurrentSnu();
 
+		var mapWidget = env.getMainMapWidget();
+
 		$.each(this.keywords, function(i, keyword) {
 			var dao = env.getDao();
 			var snus = dao.findSnusWithKeyword(keyword.value);
 
 			for (var j = 0; j < snus.length; ++j) {
 				var snu = snus[j];
-				if (snu == currentSnu || snu.lives === 0)
+				if (snu == currentSnu || snu.lives === 0) {
+	
+					/* MAPPING PLUGIN */
+					if (keyword.isLOC()) {
+						keyword.removeAfterMap = true;
+
+						//add it to the searchResults LOCs list
+						searchResults.addLOC(keyword);
+					}
+
 					continue;
+				}
+
 				var result;
 				var index = searchResults.indexOfSnu(snu);
 
@@ -54,7 +67,14 @@ Class.register('org.korsakow.domain.rule.KeywordLookup', org.korsakow.domain.Rul
 				}
 				result.score += env.getDefaultSearchResultIncrement() * snu.rating;
 
-				searchResults.addKeyword(keyword);
+				if (keyword.isLOC()) {
+					keyword.removeAfterMap = false;
+
+					searchResults.addLOC(keyword);
+				} else {
+					searchResults.addKeyword(keyword);
+				}
+
 			}
 		});
 	}
@@ -79,57 +99,6 @@ Class.register('org.korsakow.domain.rule.ExcludeKeywords', org.korsakow.domain.R
 	}
 });
 
-/* MAPPING PLUGIN */
-/* Finds SNUs associated with LOCS in a map. SNU's scores increases for
- * each LOC/keyword that matches.
- */
-Class.register('org.korsakow.domain.rule.LOCLookup', org.korsakow.domain.Rule, {
-	initialize: function($super, id, locs, type) {
-		$super(id, locs, type);
-		// TODO: assert type == org.korsakow.rule.LOCLookup
-	},
-	/*
-	 * @param searchResults {org.korsakow.SearchResults}
-	 */
-	execute: function(env, searchResults) {
-		//NOTE: in this case this.keywords is a list of LOCS, not keywords
-		org.korsakow.log.debug('KeywordLookup: ' + this.keywords);
-		
-		// for each time a snu appears in a list, increase its searchResults
-		// (thus, snus searchResults proportionally to the number of LOC/keywords
-		// they match)
-		// NOTE: The way LOCs are dealt with is different in a Map than in a Snu.
-		// 		 There can only be one LOC with a given keyword in each Map, so
-		//		 we ultimately want to return a mapping of LOCs to their associated
-		//		 Snus.
-		var currentSnu = env.getCurrentSnu();
-
-		$.each(this.keywords, function(i, loc) {
-			var dao = env.getDao();
-			var snus = dao.findSnusWithKeyword(loc.keywordValue());
-
-			for (var j = 0; j < snus.length; ++j) {
-				var snu = snus[j];
-				if (snu == currentSnu || snu.lives === 0)
-					continue;
-				var result;
-				var index = searchResults.indexOfSnu(snu);
-
-				if ( index == -1 ) {
-					result = new org.korsakow.SearchResult(snu, 0, loc);
-					searchResults.results.push(result);
-				} else {
-					result = searchResults.results[index];
-					result.addKeyword(loc);
-				}
-				result.score += env.getDefaultSearchResultIncrement() * snu.rating;
-
-				searchResults.addKeyword(loc);
-			}
-		});
-	}
-});
-
 /* Performs a search by running a series of subrules. Results are displayed
  * in Preview widgets.
  */
@@ -147,40 +116,72 @@ Class.register('org.korsakow.domain.rule.Search', org.korsakow.domain.Rule, {
 		this.processSearchResults(env, searchResults, map);
 	},
 	/* MAPPING PLUGIN */
+	findMapWithLocName: function(env, locName) {
+		var maps = env.getDao().findMapsWithLOC(locName);
+
+		if (maps.length > 0)
+			return { map: maps[0], loc: locName };
+
+		return { map: null, loc: null };
+	},
+	/* MAPPING PLUGIN */
 	findMap: function(env, searchResults) {
 		if (env.currentMap != null) {
 			//There is a current map. The rule is thus: If there is a current map, then preference
 			//this over other maps.  So we search the current map to see if it owns one of
 			//the locs.  If none of the locs are in the current map, then we are free to choose 
 			//the top rated map.
-			for (var i = 0; i < searchResults.keywords.length; ++i) {
-				var keyword = searchResults.keywords[i].keyword;
+			for (var i = 0; i < searchResults.LOCs.length; ++i) {
+				var keyword = searchResults.LOCs[i].keyword;
 
-				if (!keyword.isLOC())
-					continue;
+				var rv = null;
 
-				for (var loc in env.currentMap.locs) {
+				jQuery.each(env.currentMap.locs, function(index, loc) {
 					if (loc.keyword == keyword.LOCValue()) {
 						//we have a match, so return the map
-						return { map: env.currentMap, loc: loc.keyword };
+						rv = { map: env.currentMap, loc: loc.keyword };
+
+						//force the jQuery.each(...) to break
+						return false;
 					}
-				}			
+				});	
+
+				if (rv != null)
+					return rv;		
 			}
 		}
 
-		//the map to use is the one associated with the highest scored LOC/Keyword in the list of keywords
-		for (var i = 0; i < searchResults.keywords.length; ++i) {
-			var keyword = searchResults.keywords[i].keyword;
-			if (keyword.isLOC()) {
-				//this is a loc, so this is the map we will choose
-				var locName = keyword.LOCValue();
+		//Look for any LOCs in the current searchResults.  If there are any, our map should come from the top scoring one in the list.
+		if (searchResults.LOCs.length > 0) {
 
-				var maps = env.getDao().findMapsWithLOC(locName);
+			var topLOC = null;
 
-				if (maps.length > 0)
-					return { map: maps[0], loc: keyword.LOCValue() };
-			}
+			jQuery.each(searchResults.LOCs, function(index, loc) {
+				if (topLOC == null) {
+					topLOC = loc;
+				} else if (loc.score > topLOC) {
+					topLOC = loc;
+				} else if (loc.score == topLOC.score) {
+					if (math.random() > 0.5) {
+						topLOC = loc;
+					}
+				}
+			});
+
+			return this.findMapWithLocName(env, topLOC.keyword.LOCValue());
 		}
+
+
+		// //the map to use is the one associated with the highest scored LOC/Keyword in the list of keywords
+		// for (var i = 0; i < searchResults.keywords.length; ++i) {
+		// 	var keyword = searchResults.keywords[i].keyword;
+		// 	if (keyword.isLOC()) {
+		// 		//this is a loc, so this is the map we will choose
+		// 		var locName = keyword.LOCValue();
+
+		// 		return this.findMapWithLocName(env, locName);
+		// 	}
+		// }
 
 		//if we reach here, there are no locs to show, so no current map
 		return { map: null, loc: null };
@@ -204,15 +205,15 @@ Class.register('org.korsakow.domain.rule.Search', org.korsakow.domain.Rule, {
 		 * in the order of most used keywords.  We will use this later for determining which map to load in the case
 		 * where we have no map.  This is also useful information if we ever need to trace back
 		 */
-		searchResults.keywords.sort(function(a, b) {
-			if (b.score == a.score)
-				return Math.random() > 0.5 ? 1 : -1;
+		// searchResults.keywords.sort(function(a, b) {
+		// 	if (b.score == a.score)
+		// 		return Math.random() > 0.5 ? 1 : -1;
 
-			return b.score - a.score;
-		});
+		// 	return b.score - a.score;
+		// });
 
 		/* sort all of the keywords associated with snu's in the result.  This gives us the keywords
-		 * that got us this snu, in the order of the most used keyword.  Again, useful for trackback.
+		 * that got us this snu, in the order of the most used keyword.  Useful for trackback.
 		 */
 		jQuery.each(searchResults.results, function(index, snu) {
 			snu.keywords.sort(function(a, b) {
@@ -223,11 +224,11 @@ Class.register('org.korsakow.domain.rule.Search', org.korsakow.domain.Rule, {
 			});
 		});
 
-		for (var i = searchResults.results.length; i--;) {
-			org.korsakow.log.debug("SearchResults : " + searchResults.results[i]);
+		// for (var i = searchResults.results.length; i--;) {
+		// 	org.korsakow.log.debug("SearchResults : " + searchResults.results[i]);
 
-			org.korsakow.log.debug("SearchResults : " + searchResults.results[i].keywords);
-		}
+		// 	org.korsakow.log.debug("SearchResults : " + searchResults.results[i].keywords);
+		// }
 
 
 		return searchResults;
@@ -243,18 +244,15 @@ Class.register('org.korsakow.domain.rule.Search', org.korsakow.domain.Rule, {
 
 			//center the map on the currently selected loc (map.loc)
 
-			//remove any snus from the searchResults that arrived here via a loc (this keeps them from displaying when there is a map present).  Traversing from the back to front, so that we can erase results as we go.
-			for (var i = searchResults.results.length; i--;) {
+			//remove any snus from the searchResults that arrived here via a loc (this keeps them from displaying in the non-map preview section when there is a map present).  Traversing from the back to front, so that we can erase results as we go.
+			searchResults.removeLOCsFromSnus();
 
-				var keyword = searchResults.results[i].keywords[0].keyword;
-
-				if (keyword.isLOC()) {
-					searchResults.results.splice(i, 1);
-				}
-			}
-
+		} else {
+			//Add any LOC that is not marked with removeAfterMap to the list of used keywords. 
+			searchResults.mergeLOCsWithKeywords();
 		}
 
+		//Setup the non-map previews
 		var previews = env.getWidgetsOfType('org.korsakow.widget.SnuAutoLink');
 
 		previews = previews.filter(function(p) {

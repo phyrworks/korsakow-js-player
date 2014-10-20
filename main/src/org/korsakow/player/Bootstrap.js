@@ -20,6 +20,12 @@ Class.register('org.korsakow.Bootstrap',org.korsakow.Object, {
 		return startSnus[Math.floor(Math.random() * startSnus.length)];
 	},
 
+	setBackgroundColor: function() {
+		if (this.env.project.backgroundColor) {
+			jQuery("body").css({'background-color': this.env.project.backgroundColor});
+		}
+	},
+
 	showSplashScreen: function() {
 		var deferred = jQuery.Deferred();
 
@@ -134,7 +140,7 @@ Class.register('org.korsakow.Bootstrap',org.korsakow.Object, {
 					view.append(imageUI.element);
 				}
 			}
-			
+
 			function showContinueScreen() {
 				
 				var deferred = jQuery.Deferred();
@@ -203,6 +209,8 @@ Class.register('org.korsakow.Bootstrap',org.korsakow.Object, {
 			);
 		};
 		
+		this.setBackgroundColor();
+
 		this.showSplashScreen().always(playFirstSnu);
 	}
 
