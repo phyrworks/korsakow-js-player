@@ -6,6 +6,16 @@ Class.register('org.korsakow.Bootstrap',org.korsakow.Object, {
 		this.dao = dao;
 		this.domRoot = domRoot;
 	},
+
+	checkMP4Compatibility: function() {
+		//Returns true if Mp4 compatible, false if Mp4 cannot be played with the current browser
+		//(In most cases this will return true.  Will return false for Firefox on Mac (as of Firefox 34.0.5))
+		var vidEle = jQuery("<video />");
+
+		var test = vidEle[0].canPlayType('video/mp4');
+
+		return test != null && test.length > 0;
+	},
 	
 	findStartSnu: function() {
 		var startSnus = this.dao.findSnusFilter(function(s) {
@@ -18,6 +28,12 @@ Class.register('org.korsakow.Bootstrap',org.korsakow.Object, {
 		}
 		
 		return startSnus[Math.floor(Math.random() * startSnus.length)];
+	},
+
+	setBackgroundColor: function() {
+		if (this.env.project.backgroundColor) {
+			jQuery("body").css({'background-color': this.env.project.backgroundColor});
+		}
 	},
 
 	showSplashScreen: function() {
@@ -67,7 +83,7 @@ Class.register('org.korsakow.Bootstrap',org.korsakow.Object, {
 			if (window.localStorage) {
 				return new org.korsakow.WebStorage(window.localStorage);
 			} else {
-				org.korsakow.log.debuyg("localStorage is not available, using a non-persistent in-memory store instead");
+				org.korsakow.log.debug("localStorage is not available, using a non-persistent in-memory store instead");
 				return new org.korsakow.MemoryStorage();
 			}
 		})();
@@ -134,7 +150,7 @@ Class.register('org.korsakow.Bootstrap',org.korsakow.Object, {
 					view.append(imageUI.element);
 				}
 			}
-			
+
 			function showContinueScreen() {
 				
 				var deferred = jQuery.Deferred();
@@ -203,6 +219,8 @@ Class.register('org.korsakow.Bootstrap',org.korsakow.Object, {
 			);
 		};
 		
+		this.setBackgroundColor();
+
 		this.showSplashScreen().always(playFirstSnu);
 	}
 
