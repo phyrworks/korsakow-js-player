@@ -12,6 +12,8 @@
 
 <script type="text/javascript" src="data/lib/jquery.js"></script>
 <script type="text/javascript" src="data/lib/prototype.class.js"></script>
+<link type="text/css" href="data/lib/video-js/video-js.css" rel="stylesheet">
+<script src="data/lib/video-js/video.js"></script>
 <script type="text/javascript" src="data/js/korsakow_player.js"></script>
 
 <script type="text/javascript">
@@ -28,7 +30,14 @@ jQuery( function() {
 			var dao = K.Dao.create(data);
 			org.korsakow.log.info('Korsakow project file loaded, bootstrapping the player...');
 			var bootstrap = new org.korsakow.Bootstrap(dao, jQuery('body'));
-			bootstrap.start();
+
+			if (bootstrap.checkMP4Compatibility()) {
+				bootstrap.start();
+			} else {				
+				//The browser cannot play Mp4, which we require.
+			jQuery("body").html("<div id='unsupported'><div class='center'>Your browser does not currently support the mp4 video format.<br />We recommend using the latest version of Chrome or Safari.</div></div>");
+			jQuery("title").html("Browser does not support mp4 video format");
+			}
 	 	},
 	 	error: function(jqXHR, textStatus, errorThrown) {
 	 	    org.korsakow.log.info('Error while loading project file: ', textStatus, errorThrown, errorThrown.stack);

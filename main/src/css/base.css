@@ -22,6 +22,34 @@ html, body {
 	position: relative;
 }
 
+#unsupported {
+    background-color: black;
+    width: 100%;
+    height: auto;
+    bottom: 0px;
+    top: 0px;
+    left: 0;
+    position: absolute;
+}
+
+#unsupported .center {
+	color: white;
+	font-size: 125%;
+    position: absolute;
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    background-color: rgba(255,255,255,0.25);
+    border-radius: 11px;
+    width: 28em;
+    padding-top: 0.5em;
+    height: 3em;
+    top: 50%;
+    left: 50%;
+    margin-top: -25px;
+    margin-left: -14em;
+    text-align: center;
+}
+
+
 #continueScreen {
 	display: none;
 	color: papayaWhip;

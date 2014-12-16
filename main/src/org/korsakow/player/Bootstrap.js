@@ -6,6 +6,16 @@ Class.register('org.korsakow.Bootstrap',org.korsakow.Object, {
 		this.dao = dao;
 		this.domRoot = domRoot;
 	},
+
+	checkMP4Compatibility: function() {
+		//Returns true if Mp4 compatible, false if Mp4 cannot be played with the current browser
+		//(In most cases this will return true.  Will return false for Firefox on Mac (as of Firefox 34.0.5))
+		var vidEle = jQuery("<video />");
+
+		var test = vidEle[0].canPlayType('video/mp4');
+
+		return test != null && test.length > 0;
+	},
 	
 	findStartSnu: function() {
 		var startSnus = this.dao.findSnusFilter(function(s) {
