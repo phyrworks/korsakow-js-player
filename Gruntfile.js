@@ -7,23 +7,15 @@ module.exports = function(grunt) {
             dist: ['dist']
         },
         concat: {
-        	css: {
-        		src: [
-        			'main/src/css/base.css',
-        			'main/src/css/mappingplugin.css',
-        			'main/src/css/mobile.css'
-        		],
-        		dest: 'dist/player/data/css/base.css'
-        	},
-        	player: {        			
-        		src: [
-        		      // TODO: review where order of concat matters
-        		      'main/src/org/korsakow/player/Polyfill.js',
-        		      'main/src/org/korsakow/player/Main.js',
+            player: {
+                src: [
+                      // TODO: review where order of concat matters
+                      'main/src/org/korsakow/player/Polyfill.js',
+                      'main/src/org/korsakow/player/Main.js',
         		      'main/src/org/korsakow/player/Tween.js',
         		      'main/src/org/korsakow/player/Support.js',
-        		      'main/src/org/korsakow/player/model/Model.js',
-        		      'main/src/org/korsakow/player/controller/Controller.js',
+                      'main/src/org/korsakow/player/model/Model.js',
+                      'main/src/org/korsakow/player/controller/Controller.js',
                       'main/src/org/korsakow/player/model/Widget.js',
                       'main/src/org/korsakow/player/controller/Widget.js',
                       'main/src/org/korsakow/player/Mapper.js',
@@ -42,12 +34,12 @@ module.exports = function(grunt) {
                       'main/src/org/korsakow/player/Environment.js',
                       'main/src/org/korsakow/player/Main.js'],
         		      //'main/src/org/**/*.js'],
-        		dest: 'dist/player/data/js/korsakow_player.js'
-        	},
-        	tests: {
-        		src: ['tests-unit/src/**/*.js'],
-        		dest: 'dist/tests-unit/js/korsakow-tests-unit.js'
-        	}
+                dest: 'dist/player/data/js/korsakow_player.js'
+            },
+            tests: {
+                src: ['tests-unit/src/**/*.js'],
+                dest: 'dist/tests-unit/js/korsakow-tests-unit.js'
+            }
         },
         copy: {
             main: {
@@ -59,12 +51,7 @@ module.exports = function(grunt) {
                 }, {
                     expand: true,
                     cwd: 'main/src',
-                    src: 'css/generated.css',
-                    dest: 'dist/player/data/'
-                }, {
-                    expand: true,
-                    cwd: 'main/src',
-                    src: 'css/debug.css',
+                    src: 'css/*',
                     dest: 'dist/player/data/'
                 }, {
                     expand: true,
