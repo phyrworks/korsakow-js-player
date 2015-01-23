@@ -1,0 +1,5 @@
+#!/bin/bash
+grunt
+mv /Users/phoenix/Devel/korsakow/korsakow-js-player/dist/player/data/js/korsakow_player.js /Users/phoenix/Sites/floriantest/data/js/korsakow_player.js 
+cp /Users/phoenix/Devel/korsakow/korsakow-js-player/dist/player/data/css/*.css /Users/phoenix/Sites/floriantest/data/css/
+open /Applications/Google\ Chrome.app http://127.0.0.1/~phoenix/floriantest

@@ -23,10 +23,12 @@ Class.register('org.korsakow.domain.Finder', {
 		this.data = data;
 		this.idIndex = {};
 		this.snuKeywordIndex = {};
+		/* MAPPING PLUGIN */
+		this.mapLocIndex = {};
 		
 		var thisFinder = this;
 		function buildIndices() {
-		    ['videos', 'images', 'sounds', 'texts', 'interfaces', 'snus'].forEach(function(type) {
+		    ['videos', 'images', 'sounds', 'texts', 'interfaces', 'snus', 'maps'].forEach(function(type) {
 		        thisFinder.data && thisFinder.data[type] && thisFinder.data[type].forEach(function(d) {
 	                thisFinder.idIndex[d.id] = d;
 	                
@@ -36,6 +38,12 @@ Class.register('org.korsakow.domain.Finder', {
     	                    thisFinder.snuKeywordIndex[value] = thisFinder.snuKeywordIndex[value] || [];
     	                    thisFinder.snuKeywordIndex[value].push(d);
     	                });
+	                } else if (type === 'maps') { /* MAPPING PLUGIN */
+	                	d.locs && d.locs.forEach(function(loc) {
+	                		var value = loc.keyword;
+	                		thisFinder.mapLocIndex[value] = thisFinder.mapLocIndex[value] || [];
+	                		thisFinder.mapLocIndex[value].push(d);
+	                	})
 	                }
 	            });
 		    });
@@ -47,6 +55,7 @@ Class.register('org.korsakow.domain.Finder', {
         org.korsakow.log.info("Building indices took " + (after-before) + "ms");
         org.korsakow.log.info('IdIndex size: ', Object.keys(this.idIndex).length);
         org.korsakow.log.info('SnuKeywordIndex size', Object.keys(this.snuKeywordIndex).length);
+        org.korsakow.log.info('MapLocIndex size', Object.keys(this.mapLocIndex).length);
 	},
 	/**
 	 * @param id the id of the object to find, corresponds to the <id> tag in the xml
@@ -64,8 +73,33 @@ Class.register('org.korsakow.domain.Finder', {
 	findSnusFilter: function(filter) {
 	    return this.data.snus.filter(filter);
 	},
+
+	/* MAPPING PLUGIN */
+	findMapsFilter: function(filter) {
+		return this.data.maps.filter(filter);
+	},
+
 	findProject: function() {
 	    return this.data.Project;
+	},
+	/* MAPPING PLUGIN */
+	findMapsWithLOC: function(locValue) {
+		if (this.mapLocIndex[locValue] == null)
+			return [];
+		else
+			return this.mapLocIndex[locValue];
+		// return this.mapLocIndex[locValue] != null ? this.mapLocIndex[locValue] : [] ;
+		/*return this.data.maps.filter(function() {
+				var x = $(this).children('locs').children('LOC');
+				for (var i = 0; i < x.length; ++i)
+					var value = $(x[i]).children("keyword")[0]; //<-- There should be exactly 1
+					var txt = $(value).text();
+					if (txt == opts.loc) {
+						return true;
+					}
+				return false;
+
+			});*/
 	}
 });
 
@@ -136,6 +170,39 @@ Class.register('org.korsakow.domain.Dao', {
         }.bind(this));
     },
     findSnus: function() { return this.findSnusFilter(function() { return true; }); },
+
+    /* MAPPING PLUGIN */
+    findMapsFilter: function(filter) {
+    	return this.finder.findMapsFilter(filter).map(function(d) {
+    		if (this.idmap[d.id])
+    			return this.idmap[d.id];
+
+    		var mapper = this.getMapper('Map');
+    		var obj = mapper.map(d);
+
+    		this.idmap[obj.id] = obj;
+    		return obj;
+    	}.bind(this));
+    },
+
+    /* MAPPING PLUGIN */
+    findMapsWithLOC: function(locValue) {
+    	var maps = this.finder.findMapsWithLOC(locValue);
+    	return maps.map(function(d) {
+    		if (this.idmap[d.id])
+    			return this.idmap[d.id];
+
+    		var mapper = this.getMapper('Map');
+    		var obj = mapper.map(d);
+    		this.idmap[obj.id] = obj;
+
+    		return obj;
+    	}.bind(this));
+    },
+
+    /* MAPPING PLUGIN */
+    findMaps: function() { return this.findMapsFilter(function() { return true; }); },
+
     findProject: function() {
         var d = this.finder.findProject();
         var mapper = this.getMapper('Project');
@@ -143,13 +210,16 @@ Class.register('org.korsakow.domain.Dao', {
         this.idmap[obj.id] = obj;
         return obj;
     },
-	mapKeywords: function(data) {
+
+    //Used to be "mapKeywords", but this has use outside of just keywords (LOCs for instance).  Actually works with most things. --Phoenix 09/18/2014
+	mapGeneric: function(data) {
 	    return data.map(function(datum) {
 	        var mapper = this.getMapper(datum.className);
 	        var obj = mapper.map(datum);
 	        return obj;
 	    }.bind(this));
 	},
+
 	map: function(datum) {
 	    var id = datum.id;
         if (this.idmap[id])
@@ -176,6 +246,12 @@ org.korsakow.domain.Dao.create = function(data) {
 		'Sound' : new org.korsakow.domain.SoundInputMapper(dao),
 		'Image': new org.korsakow.domain.ImageInputMapper(dao),
 		'Snu': new org.korsakow.domain.SnuInputMapper(dao),
+
+		/* MAPPING PLUGIN */
+		'Map': new org.korsakow.mappingplugin.domain.MapInputMapper(dao),
+		/* MAPPING PLUGIN */
+		'LOC': new org.korsakow.mappingplugin.domain.LOCInputMapper(dao),
+
 		'Interface': new org.korsakow.domain.InterfaceInputMapper(dao),
 		'Widget': new org.korsakow.domain.WidgetInputMapper(dao),
 		'Event': new org.korsakow.domain.EventInputMapper(dao),
@@ -244,6 +320,52 @@ Class.register('org.korsakow.domain.InputMapper', {
 	},
 	parseColor: function(data, prop) {
 		return PU.parseColor(data[prop], this.getClass().qualifiedName + "." + prop + ':' + data['id']);
+	},
+
+	parseIntNoThrow: function(data, prop, defaultValue) {
+		try {
+			return PU.parseInt(data[prop], this.getClass().qualifiedName + "." + prop + ':' + data['id']);
+		} catch (err) {
+			org.korsakow.log.info(err);
+
+			return defaultValue;
+		}
+	},
+	parseFloatNoThrow: function(data, prop, defaultValue) {
+		try {
+			return PU.parseFloat(data[prop], this.getClass().qualifiedName + "." + prop + ':' + data['id']);
+		} catch (err) {
+			org.korsakow.log.info(err);
+
+			return defaultValue;
+		}
+	},
+	parseStringNoThrow: function(data, prop, defaultValue) {
+		try {
+			return PU.parseString(data[prop], this.getClass().qualifiedName + "." + prop + ':' + data['id']);
+		} catch (err) {
+			org.korsakow.log.info(err);
+
+			return defaultValue;
+		}
+	},
+	parseBooleanNoThrow: function(data, prop, defaultValue) {
+		try {
+			return PU.parseBoolean(data[prop], this.getClass().qualifiedName + "." + prop + ':' + data['id']);
+		} catch (err) {
+			org.korsakow.log.info(err);
+
+			return defaultValue;
+		}
+	},
+	parseColorNoThrow: function(data, prop, defaultValue) {
+		try {
+			return PU.parseColor(data[prop], this.getClass().qualifiedName + "." + prop + ':' + data['id']);
+		} catch (err) {
+			org.korsakow.log.info(err);
+
+			return defaultValue;
+		}
 	}
 });
 
@@ -317,7 +439,7 @@ Class.register('org.korsakow.domain.SnuInputMapper', org.korsakow.domain.InputMa
 	map: function(data) {
 		var id = this.parseInt(data, "id");
 		var name = this.parseString(data, "name");
-		var keywords = this.dao.mapKeywords(data.keywords);
+		var keywords = this.dao.mapGeneric(data.keywords);
 		var mainMedia = this.dao.findMediaById(this.parseInt(data, "mainMediaId"));
         var previewImage = (function() {
             if (org.korsakow.isValue(data["previewImageId"])) {
@@ -436,12 +558,12 @@ Class.register('org.korsakow.domain.PreviewInputMapper', org.korsakow.domain.Inp
 		var height = this.parseInt(data, "height");
 		var index = this.parseInt(data, "index");
 		
-		var fontColor = this.parseString(data, "fontColor");
-		var fontFamily = this.parseString(data, "fontFamily");
-		var fontSize = this.parseInt(data, "fontSize");
-		var fontStyle = this.parseString(data, "fontStyle");
-		var fontWeight = this.parseString(data, "fontWeight");
-		var textDecoration = this.parseString(data, "textDecoration");
+		var fontColor = this.parseStringNoThrow(data, "fontColor", "black");
+		var fontFamily = this.parseStringNoThrow(data, "fontFamily", "Arial");
+		var fontSize = this.parseIntNoThrow(data, "fontSize", "12");
+		var fontStyle = this.parseStringNoThrow(data, "fontStyle", "normal");
+		var fontWeight = this.parseStringNoThrow(data, "fontWeight", "normal");
+		var textDecoration = this.parseString(data, "textDecoration", "none");
 		
 		var horizontalTextAlignment = this.parseString(data, "horizontalTextAlignment");
 		var verticalTextAlignment = this.parseString(data, "verticalTextAlignment");
@@ -739,7 +861,7 @@ Class.register('org.korsakow.domain.KeywordLookupInputMapper', org.korsakow.doma
 	map: function(data) {
 		var type = this.parseString(data, "type");
 		var id = this.parseInt(data, "id");
-		var keywords = this.dao.mapKeywords(data.keywords);
+		var keywords = this.dao.mapGeneric(data.keywords);
 		var rule = new org.korsakow.domain.rule.KeywordLookup(id, keywords, type);
 		return rule;
 	}
@@ -751,7 +873,7 @@ Class.register('org.korsakow.domain.ExcludeKeywordsInputMapper', org.korsakow.do
 	map: function(data) {
 		var type = this.parseString(data, "type");
 		var id = this.parseInt(data, "id");
-		var keywords = this.dao.mapKeywords(data.keywords);
+		var keywords = this.dao.mapGeneric(data.keywords);
 		var rule = new org.korsakow.domain.rule.ExcludeKeywords(id, keywords, type);
 		return rule;
 	}

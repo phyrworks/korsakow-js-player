@@ -20,8 +20,7 @@ Class.register('org.korsakow.controller.AbstractWidgetController', org.korsakow.
 				top: this.model.y,
 				width: this.model.width,
 				height: this.model.height
-			})
-			;
+			});
 
 		var W = function(p) {
 			return (100*p/env.project.width) + '%'; 

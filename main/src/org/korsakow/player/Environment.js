@@ -8,6 +8,9 @@ Class.register('org.korsakow.Environment', {
 		this.interfaceController = null;
 		this.currentMainMedia = null;
 		this.backgroundSoundUI = null;
+        /* MAPPING PLUGIN */
+        this.currentMainMapWidget = null;
+        this.currentMap = null;
 		
 		this.view = view;
 		this.dao = dao;
@@ -66,6 +69,16 @@ Class.register('org.korsakow.Environment', {
 	getMainMediaWidget: function(){
 		return this.getWidgetsOfType("org.korsakow.widget.MainMedia")[0];
 	},
+	/* MAPPING PLUGIN */
+	getMainMapWidget: function(){
+		var mapWidgets = this.getWidgetsOfType("org.korsakow.mappingplugin.widget.MainMapWidget");
+
+		if (mapWidgets.length > 0)
+			return mapWidgets[0];
+
+		return null;
+	},
+
 	getLastSnu: function() {
 		return this.localStorage.get('lastSnu');
 	},
@@ -168,6 +181,9 @@ Class.register('org.korsakow.Environment', {
 		}
 		this.currentMainMedia = null;
 
+		/* MAPPING PLUGIN */
+		this.currentMainMapWidget = null;
+
 		this.currentSnu = snu;
 		this.setLastSnu(snu.id);
 		
@@ -183,6 +199,8 @@ Class.register('org.korsakow.Environment', {
 			ctrl.setup(this);
 			if (ctrl.model.type === 'org.korsakow.widget.MainMedia') {
 				this.currentMainMedia = ctrl;
+			} else if (ctrl.model.type === 'org.korsakow.mappingplugin.widget.MainMapWidget'){
+				this.currentMainMapWidget = ctrl;
 			}
 		}
 		if (!this.currentMainMedia) {

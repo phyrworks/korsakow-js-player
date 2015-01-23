@@ -1,0 +1,73 @@
+
+/* MAPPING PLUGIN BEGIN*/
+.MainMap
+	{
+	/*border:2px lightGray solid;*/
+	position:absolute;
+	background-color:gray;
+	overflow:auto;
+	margin: 0;
+	padding: 0;
+	}
+
+.MainMap .map
+	{
+	-webkit-user-select: none;
+	background-color: darkGray;
+	text-align: center;
+	vertical-align: middle;
+	color: white;
+	margin: 0;
+	padding: 0;
+	top: 0;
+	left: 0;
+	box-shadow: 0px 0px 50px;
+	-webkit-box-shadow: 0 0 50px black;
+	}
+
+.MainMap .mapPreview
+	{
+	border: 1px white solid;
+	border-radius: 12px 12px 12px 12px;
+	background-color: rgba(0, 0, 0, 0.5);
+	position: absolute;
+	}
+
+/*.MainMap .topLeft
+	{
+	border-radius: 0 12px 12px 12px;
+	background-color: rgba(0, 0, 0, 0.5);
+	}
+
+.MainMap .bottomLeft
+	{
+	border-radius: 12px 12px 12px 0px;
+	background-color: rgba(0, 0, 0, 0.5);
+	}
+
+.MainMap .topRight
+	{
+	border-radius: 12px 0px 12px 12px;
+	background-color: rgba(0, 0, 0, 0.5);
+	}
+
+.MainMap .bottomRight
+	{
+	border-radius: 12px 12px 0px 12px;
+	background-color: rgba(0, 0, 0, 0.5);
+	}
+*/
+.MainMap .locPointer
+	{
+    position: absolute;
+    margin: 0;
+    padding: 0;
+	min-width: 14px;
+	min-height: 14px;
+	background-color: darkGray;
+	border: 1px white solid;
+	border-radius: 9px;
+	}
+
+
+/* MAPPING PLUGIN END */
